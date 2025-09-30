@@ -1129,8 +1129,7 @@
 
                 const color = this.hslToHex(hue, saturation, lightness);
 
-                // Debug log to see what colors are being generated
-                console.log(`Color for "${key}": ${color} (hue: ${hue})`);
+                // Debug: color generation (disabled to reduce console noise)
 
                 return color;
             }
@@ -1180,8 +1179,7 @@
                     key = activity.subject; // Default for rooms
                 }
 
-                // Debug log to see what keys are being used
-                console.log(`Activity color for ${type}: key="${key}", subject="${activity.subject}", students="${activity.students}"`);
+                // Debug: activity color key (disabled to reduce console noise)
 
                 return this.generateColorForKey(key);
             }
@@ -1758,7 +1756,6 @@
                         if (activity) {
                             activity.day = day;
                             activity.hour = hour;
-                            console.log(`Assigned Activity ${activityId}: ${day} at ${hour}`);
                         }
                     }
                 });
@@ -1786,7 +1783,6 @@
                         const activity = this.data.activities.find(act => act.id === activityId);
                         if (activity) {
                             activity.room = room;
-                            console.log(`Assigned Activity ${activityId} to room: ${room}`);
                         }
                     }
                 });
@@ -1799,9 +1795,10 @@
                 // Log all select elements in the document
                 const allSelects = document.querySelectorAll('select');
                 console.log('Found select elements:', allSelects.length);
-                allSelects.forEach((select, index) => {
-                    console.log(`Select ${index}: id="${select.id}", exists=${!!select}`);
-                });
+                // Optionally log select elements for debugging — disabled to reduce console noise
+                // allSelects.forEach((select, index) => {
+                //     console.log(`Select ${index}: id="${select.id}", exists=${!!select}`);
+                // });
 
                 // Populate teachers dropdown
                 const teacherSelect = document.getElementById('teacherSelect');
@@ -2053,7 +2050,7 @@
                         html += '<div class="teacher-section">';
                         const teacherActivities = this.data.activities.filter(a => a.teacher === teacher);
                         const subjects = [...new Set(teacherActivities.map(a => a.subject))];
-                        const totalHours = teacherActivities.reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                        const totalHours = this.computeTotalHours(teacherActivities);
 
                         html += `<div class="teacher-info">`;
                         html += `<h3>${teacher}</h3>`;
@@ -2069,7 +2066,7 @@
                         html += '<div class="teacher-section">';
                         const studentActivities = this.getStudentAndSubgroupActivities(student);
                         const subjects = [...new Set(studentActivities.map(a => a.subject))];
-                        const totalHours = studentActivities.reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                        const totalHours = this.computeTotalHours(studentActivities);
 
                         html += `<div class="teacher-info">`;
                         html += `<h3>${student}</h3>`;
@@ -2083,7 +2080,7 @@
                         html += '<div class="teacher-section">';
                         const roomActivities = this.data.activities.filter(a => a.room === room);
                         const subjects = [...new Set(roomActivities.map(a => a.subject))];
-                        const totalHours = roomActivities.reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                        const totalHours = this.computeTotalHours(roomActivities);
 
                         html += `<div class="teacher-info">`;
                         html += `<h3>${room}</h3>`;
@@ -2109,7 +2106,7 @@
                         }
 
                         const subjects = [...new Set(entityActivities.map(a => a.subject))];
-                        const totalHours = entityActivities.reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                        const totalHours = this.computeTotalHours(entityActivities);
 
                         html += `<div class="teacher-info">`;
                         html += `<h3>${entity}</h3>`;
@@ -2327,15 +2324,15 @@
                     // Vertical layout: Days as rows, Hours as columns
                     if (type === 'teacher') {
                         const teacherActivities = activities.filter(a => a.teacher === entityName);
-                        const totalHours = teacherActivities.reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                        const totalHours = this.computeTotalHours(teacherActivities);
                         html += `<th class="day-header">${totalHours}h</th>`;
                     } else if (type === 'student') {
                         const studentActivities = activities.filter(a => a.students === entityName || (a.students && a.students.includes && a.students.includes(entityName)));
-                        const totalHours = studentActivities.reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                        const totalHours = this.computeTotalHours(studentActivities);
                         html += `<th class="day-header">${totalHours}h</th>`;
                     } else if (type === 'room') {
                         const roomActivities = activities.filter(a => a.room === entityName);
-                        const totalHours = roomActivities.reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                        const totalHours = this.computeTotalHours(roomActivities);
                         html += `<th class="day-header">${totalHours}h</th>`;
                     } else {
                         html += '<th class="day-header">Day</th>';
@@ -2359,9 +2356,10 @@
                         let dayTotalHours = 0;
                         if (type === 'teacher') {
                             const virtualDaysForRealDay = this.getVirtualDaysForRealDay(dayIndex);
-                            dayTotalHours = activities.filter(activity =>
+                            const dayActivities = activities.filter(activity =>
                                 virtualDaysForRealDay.includes(activity.day)
-                            ).reduce((sum, activity) => sum + (activity.duration || 1), 0);
+                            );
+                            dayTotalHours = this.computeTotalHours(dayActivities);
                         }
 
                         const dayHeaderContent = type === 'teacher' ?
@@ -2926,6 +2924,33 @@
                     actualHour: this.data.hours[expandedHourIndex] || this.data.hours[0],
                     virtualDayOffset: 0
                 };
+            }
+
+            // Compute total occupied base-hour slots for a set of activities
+            // Avoids double-counting when multiple activities occur at the same day+hour
+            computeTotalHours(activities) {
+                if (!activities || activities.length === 0) return 0;
+                const occupied = new Set();
+                activities.forEach(activity => {
+                    const day = activity.day != null ? String(activity.day) : '';
+                    const startHour = activity.hour;
+                    const duration = parseInt(activity.duration || 1, 10) || 1;
+
+                    // Try to find the index of the start hour in known hours; fallback to string key
+                    const startIndex = this.data.hours ? this.data.hours.indexOf(startHour) : -1;
+
+                    for (let offset = 0; offset < duration; offset++) {
+                        let slotId;
+                        if (startIndex !== -1) {
+                            slotId = `${day}||${startIndex + offset}`;
+                        } else {
+                            // Use hour string plus offset to identify the slot when index isn't available
+                            slotId = `${day}||${String(startHour)}||${offset}`;
+                        }
+                        occupied.add(slotId);
+                    }
+                });
+                return occupied.size;
             }
 
             getOrdinalSuffix(num) {
