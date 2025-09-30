@@ -719,7 +719,9 @@
             /* Force all printed text to black and remove colored backgrounds (override inline styles)
                This ensures legible, printer-friendly output where text remains black regardless of
                on-screen coloring. */
-            *, *::before, *::after {
+            *,
+            *::before,
+            *::after {
                 color: #000 !important;
                 background: transparent !important;
                 -webkit-print-color-adjust: exact;
@@ -727,7 +729,8 @@
             }
 
             /* Activity blocks should print with transparent/white backgrounds and black text */
-            .activity, .activity * {
+            .activity,
+            .activity * {
                 background: transparent !important;
                 color: #000 !important;
             }
