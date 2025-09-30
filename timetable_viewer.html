@@ -1814,11 +1814,18 @@
 
                 console.log(`Populating ${this.data.teachers.size} teachers`);
                 teacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
-                Array.from(this.data.teachers.keys()).sort(this.teacherSubjectNameComparator.bind(this)).forEach(teacher => {
-                    const option = document.createElement('option');
-                    option.value = teacher;
-                    option.textContent = teacher;
-                    teacherSelect.appendChild(option);
+                // Group teachers by subject and render optgroups
+                const grouped = this.getTeachersGroupedBySubject();
+                Array.from(grouped.keys()).sort(this.collator.compare).forEach(subject => {
+                    const opt = document.createElement('optgroup');
+                    opt.label = subject;
+                    grouped.get(subject).forEach(teacher => {
+                        const option = document.createElement('option');
+                        option.value = teacher;
+                        option.textContent = teacher;
+                        opt.appendChild(option);
+                    });
+                    teacherSelect.appendChild(opt);
                 });
 
                 // Populate students dropdown
@@ -2278,6 +2285,21 @@
                 }
                 // Fall back to numeric-aware collator for names
                 return this.collator.compare(a, b);
+            }
+
+            // Group teachers by their primary subject (returns Map<subject, [teacherName]>)
+            getTeachersGroupedBySubject() {
+                const groups = new Map();
+                Array.from(this.data.teachers.keys()).forEach(teacher => {
+                    const subj = (this.getTeacherPrimarySubject(teacher) || 'Unassigned').split(',')[0].trim();
+                    if (!groups.has(subj)) groups.set(subj, []);
+                    groups.get(subj).push(teacher);
+                });
+                // Sort each group's teacher names
+                groups.forEach((arr, key) => {
+                    arr.sort(this.collator.compare);
+                });
+                return groups;
             }
 
             generateTimetable(activities, type, entityName = '') {
