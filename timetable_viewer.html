@@ -1,0 +1,3324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FET Timetable Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .file-upload {
+            margin: 20px auto;
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+        }
+
+        .file-upload-area {
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            margin: 20px 0;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: scale(1.02);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .file-input-wrapper:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-input-wrapper input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .file-input-label {
+            position: relative;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background: white;
+            margin: 20px auto;
+            max-width: 800px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dropdown-container {
+            margin-bottom: 20px;
+        }
+
+        .dropdown-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .dropdown {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .timetable-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        /* RTL/LTR Support */
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .ltr {
+            direction: ltr;
+            text-align: left;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: table;
+            table-layout: fixed;
+        }
+
+        .timetable th,
+        .timetable td {
+            padding: 4px 3px;
+            text-align: center;
+            border: 1px solid #e1e5e9;
+            vertical-align: top;
+            min-width: 120px;
+            display: table-cell;
+        }
+
+        .timetable th {
+            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+            /* color: white; */
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .timetable th.day-header {
+            background: #495057;
+            color: white;
+            min-width: 60px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .timetable .vertical-layout {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+
+        .timetable td {
+            background: #f8f9fa;
+            min-height: 60px;
+            position: relative;
+            vertical-align: top;
+        }
+
+        /* Make table cells in the same row have equal height */
+        .timetable tr {
+            display: table-row;
+        }
+
+        .timetable td {
+            height: 100%;
+        }
+
+        .activity {
+            background: #28a745;
+            /* solid color instead of gradient */
+            color: white;
+            padding: 8px;
+            margin: 0px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.3;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            height: 100%;
+            min-height: 60px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Spanned activities (colspan > 1) get special styling */
+        td[colspan] .activity {
+            background: #007bff;
+            /* solid color for spanned activities */
+            border: none;
+            font-weight: 600;
+            text-align: center;
+            height: 100%;
+        }
+
+        .activity .subject {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .activity .teacher {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .activity .room {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        /* Empty slots styling */
+        .empty-slot {
+            /* background: #e9ecef !important;   */
+            min-height: 100%;
+        }
+
+        /* Ensure equal row heights for table cells */
+        .timetable {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .timetable tbody tr {
+            height: 1px;
+            /* This forces cells to be equal height */
+        }
+
+        .timetable tbody td {
+            vertical-align: middle;
+            height: inherit;
+            padding: 4px;
+        }
+
+        /* Multiple activities container */
+        .activity-separator {
+            margin: 4px 0;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .info-panel {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .settings-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .settings-section {
+            margin-bottom: 25px;
+        }
+
+        .settings-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 8px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .setting-item label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .custom-inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .custom-name-input {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+
+        .custom-name-input label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .custom-name-input input {
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .custom-name-input input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        .timetable-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .timetable-header h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .subjects,
+        .total-hours {
+            margin: 5px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .assigned-classes,
+        .subject-teachers {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .assigned-classes h4,
+        .subject-teachers h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+
+        .classes-list {
+            padding: 4px;
+            font-weight: 600;
+            color: #007bff;
+            border: #8f8f8f solid 2px;
+            border-radius: 8px;
+        }
+
+        .subject-teacher-item {
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        /* Teachers table styling */
+        .teachers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .teachers-table td {
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            vertical-align: top;
+        }
+
+        .teachers-table .subject-cell {
+            background-color: #e9ecef;
+            font-weight: bold;
+            width: 25%;
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        .teachers-table .teacher-cell {
+            background-color: #f8f9fa;
+            width: 25%;
+            text-align: right;
+            padding-left: 15px;
+        }
+
+        .activity-separator {
+            border: none;
+            border-top: 2px dashed #6c757d;
+            margin: 5px 0;
+        }
+
+        .class-group {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .room {
+            font-size: 11px;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .subgroup {
+            font-size: 10px;
+            font-weight: bold;
+            color: #ffffff;
+            /* white for good contrast */
+            text-align: center;
+            margin-top: 2px;
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.25);
+            /* translucent dark background for readability against colored activities */
+            border-radius: 3px;
+        }
+
+        .setting-item input,
+        .setting-item select {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #667eea;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+                margin: 10px;
+            }
+
+            .content-wrapper {
+                padding: 10px;
+            }
+
+            .timetable th,
+            .timetable td {
+                padding: 8px 4px;
+                font-size: 12px;
+            }
+
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .setting-item label {
+                min-width: auto;
+            }
+        }
+
+        /* Print tab styling */
+        .print-options {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .print-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .print-section h4 {
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.2rem;
+        }
+
+        .print-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .selection-type {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .selection-type label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .selection-controls {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .checkbox-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .checkbox-list label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px;
+            background: white;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+        }
+
+        .print-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .print-all {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+
+        .print-all:hover {
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        @media print {
+
+            .header,
+            .file-upload,
+            .tabs,
+            .print-options {
+                display: none !important;
+            }
+
+            .timetable-container {
+                page-break-after: always;
+            }
+
+            .timetable {
+                width: 100% !important;
+                font-size: 12px;
+            }
+
+            .teachers-table {
+                border: 1px solid #000 !important;
+            }
+
+            .teachers-table td {
+                border: 1px solid #000 !important;
+                font-size: 11px;
+            }
+
+            /* Force all printed text to black and remove colored backgrounds (override inline styles)
+               This ensures legible, printer-friendly output where text remains black regardless of
+               on-screen coloring. */
+            *,
+            *::before,
+            *::after {
+                color: #000 !important;
+                background: transparent !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Ensure H1 ends the first printed page */
+            h1 {
+                page-break-after: always;
+            }
+
+            /* Activity blocks should print with transparent/white backgrounds and black text */
+            .activity,
+            .activity * {
+                /* background: transparent !important; */
+                color: #000 !important;
+            }
+
+            .teachers-table .subject-cell {
+                background-color: transparent !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>📚 FET Timetable Viewer</h1>
+        <p>Import and view timetables for Teachers, Students, and Rooms</p>
+    </div>
+
+    <div class="file-upload">
+        <div class="file-upload-area" id="fileDropArea">
+            <label class="file-input-wrapper" for="xmlFile">
+                <input type="file" id="xmlFile" accept=".fet,.xml,text/xml,application/xml" multiple>
+                <span class="file-input-label">📁 Select FET XML Files</span>
+            </label>
+            <p style="margin-top: 15px; color: #666;">Or drag and drop your files here</p>
+            <div
+                style="margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; font-size: 14px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                💡 <strong>How to use:</strong><br>
+                1. Click "Select FET XML Files" button above<br>
+                2. Navigate to your folder and select <code>TimeTable.fet</code><br>
+                3. The file will be processed and you can view timetables in the tabs below
+            </div>
+            <div style="margin-top: 10px; display: none; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button id="testButton"
+                    style="padding: 8px 16px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    🔧 Test Application
+                </button>
+                <button id="alternativeUpload"
+                    style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    📂 Alternative Upload
+                </button>
+            </div>
+        </div>
+        <div id="fileStatus" style="margin-top: 10px; padding: 10px; display: none; border-radius: 5px;"></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-tab="teachers">👨‍🏫 Teachers</button>
+        <button class="tab" data-tab="students">👥 Students</button>
+        <button class="tab" data-tab="rooms">🏫 Rooms</button>
+        <button class="tab" data-tab="print">🖨️ Print/PDF</button>
+        <button class="tab" data-tab="settings">⚙️ Settings</button>
+    </div>
+
+    <div class="content-wrapper">
+        <div id="teachers-content" class="tab-content active">
+            <div class="dropdown-container">
+                <label class="dropdown-label" for="teacherSelect">Select Teacher:</label>
+                <select id="teacherSelect" class="dropdown">
+                    <option value="">Choose a teacher...</option>
+                </select>
+            </div>
+            <div id="teacherTimetable" class="timetable-container"></div>
+        </div>
+
+        <div id="students-content" class="tab-content">
+            <div class="dropdown-container">
+                <label class="dropdown-label" for="studentSelect">Select Student Group:</label>
+                <select id="studentSelect" class="dropdown">
+                    <option value="">Choose a student group...</option>
+                </select>
+            </div>
+            <div id="studentTimetable" class="timetable-container"></div>
+        </div>
+
+        <div id="rooms-content" class="tab-content">
+            <div class="dropdown-container">
+                <label class="dropdown-label" for="roomSelect">Select Room:</label>
+                <select id="roomSelect" class="dropdown">
+                    <option value="">Choose a room...</option>
+                </select>
+            </div>
+            <div id="roomTimetable" class="timetable-container"></div>
+        </div>
+
+        <div id="settings-content" class="tab-content">
+            <div class="settings-panel">
+                <div class="settings-section">
+                    <h3>🌐 Display Settings</h3>
+                    <div class="setting-item">
+                        <label>Text Direction:</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="rtlToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span id="rtlLabel">LTR (Left to Right)</span>
+                    </div>
+                    <div class="setting-item">
+                        <label>Language:</label>
+                        <select id="languageSelect">
+                            <option value="en">English</option>
+                            <option value="ar">العربية</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>📅 Time Settings</h3>
+                    <div class="setting-item">
+                        <label>Day Names:</label>
+                        <select id="dayNamesFormat">
+                            <option value="original">Original (from file)</option>
+                            <option value="english">English</option>
+                            <option value="arabic">Arabic</option>
+                            <option value="french">French</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Hour Format:</label>
+                        <select id="hourFormat">
+                            <option value="original">Original (from file)</option>
+                            <option value="24h">24 Hour (08:00, 09:00, ...)</option>
+                            <option value="12h">12 Hour (8 AM, 9 AM, ...)</option>
+                            <option value="period">Period (1st, 2nd, 3rd, ...)</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Morning Start:</label>
+                        <input type="number" id="morningStart" min="0" max="23" value="8"
+                            style="width:80px; padding:6px;" />
+                        <small style="color:#666; font-size:11px; margin-left:10px;">Start hour for the morning
+                            session</small>
+                    </div>
+                    <div class="setting-item">
+                        <label>Afternoon Start:</label>
+                        <input type="number" id="afternoonStart" min="0" max="23" value="14"
+                            style="width:80px; padding:6px;" />
+                        <small style="color:#666; font-size:11px; margin-left:10px;">Start hour for the afternoon
+                            session</small>
+                    </div>
+                    <div class="settings-section">
+                        <h3>📝 Custom Day Names</h3>
+                        <div id="dayNamesInputs" class="custom-inputs-grid"></div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>🕐 Custom Hour Names</h3>
+                        <div id="hourNamesInputs" class="custom-inputs-grid"></div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>🎨 Appearance</h3>
+                    <div class="setting-item">
+                        <label>Table Layout:</label>
+                        <select id="tableLayout">
+                            <option value="vertical">Days Vertical (recommended)</option>
+                            <option value="horizontal">Days Horizontal</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>Base Color (for color generation):</label>
+                        <input type="color" id="activityColor" value="#28a745">
+                        <small style="color: #666; font-size: 11px; margin-left: 10px;">
+                            Activities use auto-generated colors: Students by Subject, Teachers by Class
+                        </small>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>💾 Data Management</h3>
+                    <div class="setting-item">
+                        <button id="resetSettings"
+                            style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            🔄 Reset to Defaults
+                        </button>
+                        <button id="exportSettings"
+                            style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            📤 Export Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="print-content" class="tab-content">
+            <div class="print-options">
+                <h3>🖨️ Print & Save as PDF</h3>
+                <p>Select what you want to print or save as PDF:</p>
+
+                <div class="print-section">
+                    <h4>👨‍🏫 Teachers</h4>
+                    <div class="print-controls">
+                        <div class="selection-type">
+                            <label><input type="radio" name="teacher-selection" value="individual" checked> Individual
+                                Teacher</label>
+                            <label><input type="radio" name="teacher-selection" value="selected"> Selected
+                                Teachers</label>
+                            <label><input type="radio" name="teacher-selection" value="all"> All Teachers</label>
+                        </div>
+
+                        <div id="individual-teacher" class="selection-controls">
+                            <select id="printTeacherSelect" class="dropdown">
+                                <option value="">Choose a teacher...</option>
+                            </select>
+                        </div>
+
+                        <div id="selected-teachers" class="selection-controls" style="display: none;">
+                            <div class="checkbox-list" id="teacherCheckboxList"></div>
+                        </div>
+
+                        <button onclick="timetableViewer.printTimetables('teacher')" class="print-btn">🖨️ Print
+                            Teachers</button>
+                    </div>
+                </div>
+
+                <div class="print-section">
+                    <h4>👥 Students</h4>
+                    <div class="print-controls">
+                        <div class="selection-type">
+                            <label><input type="radio" name="student-selection" value="individual" checked> Individual
+                                Student Group</label>
+                            <label><input type="radio" name="student-selection" value="selected"> Selected
+                                Groups</label>
+                            <label><input type="radio" name="student-selection" value="all"> All Student Groups</label>
+                        </div>
+
+                        <div id="individual-student" class="selection-controls">
+                            <select id="printStudentSelect" class="dropdown">
+                                <option value="">Choose a student group...</option>
+                            </select>
+                        </div>
+
+                        <div id="selected-students" class="selection-controls" style="display: none;">
+                            <div class="checkbox-list" id="studentCheckboxList"></div>
+                        </div>
+
+                        <button onclick="timetableViewer.printTimetables('student')" class="print-btn">🖨️ Print
+                            Students</button>
+                    </div>
+                </div>
+
+                <div class="print-section">
+                    <h4>🏫 Rooms</h4>
+                    <div class="print-controls">
+                        <div class="selection-type">
+                            <label><input type="radio" name="room-selection" value="individual" checked> Individual
+                                Room</label>
+                            <label><input type="radio" name="room-selection" value="selected"> Selected Rooms</label>
+                            <label><input type="radio" name="room-selection" value="all"> All Rooms</label>
+                        </div>
+
+                        <div id="individual-room" class="selection-controls">
+                            <select id="printRoomSelect" class="dropdown">
+                                <option value="">Choose a room...</option>
+                            </select>
+                        </div>
+
+                        <div id="selected-rooms" class="selection-controls" style="display: none;">
+                            <div class="checkbox-list" id="roomCheckboxList"></div>
+                        </div>
+
+                        <button onclick="timetableViewer.printTimetables('room')" class="print-btn">🖨️ Print
+                            Rooms</button>
+                    </div>
+                </div>
+
+                <div class="print-section">
+                    <h4>📄 Print All</h4>
+                    <button onclick="timetableViewer.printAllTimetables()" class="print-btn print-all">🖨️ Print
+                        Everything (Teachers + Students + Rooms)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TimetableViewer {
+            constructor() {
+                console.log('TimetableViewer constructor called');
+
+                this.data = {
+                    teachers: new Map(),
+                    students: new Map(),
+                    rooms: new Map(),
+                    activities: [],
+                    days: [],
+                    realDays: [],
+                    hours: [],
+                    subjects: new Map()
+                };
+                this.currentTab = 'teachers';
+
+                // Load settings from localStorage or use defaults
+                const savedSettings = this.loadSettings();
+                this.settings = {
+                    rtl: false,
+                    language: 'en',
+                    dayNamesFormat: 'original',
+                    hourFormat: 'original',
+                    tableLayout: 'vertical',
+                    activityColor: '#28a745',
+                    morningStart: 8,
+                    afternoonStart: 14,
+                    customDayNames: {},
+                    customHourNames: {},
+                    ...savedSettings
+                };
+
+                // Apply loaded settings to UI after DOM is ready
+                this.applySettingsToUI();
+
+                // Collator for natural (numeric-aware) sorting of names like "Salle 1", "Salle 10"
+                this.collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+                // Day name translations
+                this.translations = {
+                    days: {
+                        english: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                        arabic: ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'],
+                        french: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
+                    }
+                };
+
+                // Check if required DOM elements exist
+                const requiredElements = ['teacherSelect', 'studentSelect', 'roomSelect'];
+                const missingElements = [];
+
+                requiredElements.forEach(id => {
+                    if (!document.getElementById(id)) {
+                        missingElements.push(id);
+                    }
+                });
+
+                if (missingElements.length > 0) {
+                    console.warn('Missing DOM elements:', missingElements);
+                }
+
+                this.initEventListeners();
+
+                // Auto-load last imported file after a short delay to ensure DOM is ready
+                setTimeout(() => {
+                    this.autoLoadLastFile();
+                }, 100);
+            }
+
+            getContrastTextColor(backgroundColor) {
+                // Remove # if present
+                const hex = backgroundColor.replace('#', '');
+
+                // Convert hex to RGB
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+
+                // Calculate relative luminance using WCAG formula
+                // Convert RGB to sRGB
+                const rsRGB = r / 255;
+                const gsRGB = g / 255;
+                const bsRGB = b / 255;
+
+                // Apply gamma correction
+                const rLin = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+                const gLin = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+                const bLin = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+
+                // Calculate luminance
+                const luminance = 0.2126 * rLin + 0.7152 * gLin + 0.0722 * bLin;
+
+                // Return black for light backgrounds, white for dark backgrounds
+                // Threshold of 0.5 works well, but you can adjust between 0.4-0.6
+                return luminance > 0.5 ? '#000000' : '#ffffff';
+            }
+
+            extractColorFromGradient(gradientOrColor) {
+                // If it's already a hex color, return it
+                if (gradientOrColor.startsWith('#')) {
+                    return gradientOrColor;
+                }
+
+                // Extract the first color from a gradient
+                // Example: "linear-gradient(135deg, #28a745 0%, #20c997 100%)"
+                const colorMatch = gradientOrColor.match(/#[0-9a-fA-F]{6}/);
+                return colorMatch ? colorMatch[0] : '#28a745'; // fallback
+            }
+
+            // Generate consistent colors for subjects/groups
+            generateColorForKey(key) {
+                if (!key) {
+                    key = 'default';
+                }
+
+                // Improved hash function for better distribution
+                let hash = 0;
+                const str = key.toString().toLowerCase().trim(); // Normalize the key
+
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // Convert to 32-bit integer
+                }
+
+                // Additional mixing to improve distribution
+                hash = ((hash >>> 16) ^ hash) * 0x45d9f3b;
+                hash = ((hash >>> 16) ^ hash) * 0x45d9f3b;
+                hash = (hash >>> 16) ^ hash;
+
+                // Generate HSL color with better distribution
+                const hue = Math.abs(hash) % 360;
+                const saturation = 60 + (Math.abs(hash >> 8) % 30); // 60-90%
+                const lightness = 40 + (Math.abs(hash >> 16) % 25); // 40-65%
+
+                const color = this.hslToHex(hue, saturation, lightness);
+
+                // Debug: color generation (disabled to reduce console noise)
+
+                return color;
+            }
+
+            hslToHex(h, s, l) {
+                s /= 100;
+                l /= 100;
+
+                const c = (1 - Math.abs(2 * l - 1)) * s;
+                const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+                const m = l - c / 2;
+                let r = 0, g = 0, b = 0;
+
+                if (0 <= h && h < 60) {
+                    r = c; g = x; b = 0;
+                } else if (60 <= h && h < 120) {
+                    r = x; g = c; b = 0;
+                } else if (120 <= h && h < 180) {
+                    r = 0; g = c; b = x;
+                } else if (180 <= h && h < 240) {
+                    r = 0; g = x; b = c;
+                } else if (240 <= h && h < 300) {
+                    r = x; g = 0; b = c;
+                } else if (300 <= h && h < 360) {
+                    r = c; g = 0; b = x;
+                }
+
+                r = Math.round((r + m) * 255);
+                g = Math.round((g + m) * 255);
+                b = Math.round((b + m) * 255);
+
+                return '#' + [r, g, b].map(x => {
+                    const hex = x.toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+            }
+
+            getActivityBackgroundColor(activity, type) {
+                // For students: color by subject
+                // For teachers: color by class/group (students)
+                let key;
+                if (type === 'student') {
+                    key = activity.subject;
+                } else if (type === 'teacher') {
+                    key = activity.students; // This should be the group/class name
+                } else {
+                    key = activity.subject; // Default for rooms
+                }
+
+                // Debug: activity color key (disabled to reduce console noise)
+
+                return this.generateColorForKey(key);
+            }
+
+            initEventListeners() {
+                console.log('Initializing event listeners...');
+
+                // File upload
+                const fileInput = document.getElementById('xmlFile');
+
+                if (!fileInput) {
+                    console.error('File input element not found!');
+                    return;
+                }
+
+                console.log('File input found, adding event listener');
+
+                fileInput.addEventListener('change', (e) => {
+                    console.log('File input changed event fired');
+                    console.log('Files selected:', e.target.files.length);
+
+                    // Log each file
+                    for (let i = 0; i < e.target.files.length; i++) {
+                        const file = e.target.files[i];
+                        console.log(`File ${i + 1}: ${file.name}, size: ${file.size}, type: ${file.type}`);
+                    }
+
+                    if (e.target.files.length > 0) {
+                        console.log('Calling handleFileUpload...');
+                        this.handleFileUpload(e.target.files);
+                    } else {
+                        console.log('No files selected');
+                        this.updateFileStatus('⚠️ No files were selected', 'error');
+                    }
+                });
+
+                fileInput.addEventListener('click', (e) => {
+                    console.log('File input clicked');
+                    // Don't prevent default here - let the browser handle it
+                });
+
+                // Test button
+                const testButton = document.getElementById('testButton');
+                if (testButton) {
+                    testButton.addEventListener('click', () => {
+                        console.log('Test button clicked');
+                        this.runDiagnostics();
+                    });
+                }
+
+                // Alternative upload button
+                const altUploadButton = document.getElementById('alternativeUpload');
+                if (altUploadButton) {
+                    altUploadButton.addEventListener('click', (e) => {
+                        console.log('Alternative upload button clicked');
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Force trigger the file input
+                        try {
+                            fileInput.click();
+                            console.log('Programmatically triggered file input');
+                        } catch (error) {
+                            console.error('Error triggering file input:', error);
+                            this.updateFileStatus('❌ Cannot open file dialog. Try drag and drop instead.', 'error');
+                        }
+                    });
+                }
+
+                // Drag and drop functionality
+                const dropArea = document.getElementById('fileDropArea');
+
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+                });
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, () => {
+                        dropArea.classList.add('dragover');
+                    });
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, () => {
+                        dropArea.classList.remove('dragover');
+                    });
+                });
+
+                dropArea.addEventListener('drop', (e) => {
+                    const files = Array.from(e.dataTransfer.files);
+                    const xmlFiles = files.filter(file =>
+                        file.name.toLowerCase().endsWith('.fet') ||
+                        file.name.toLowerCase().endsWith('.xml')
+                    );
+
+                    if (xmlFiles.length > 0) {
+                        this.handleFileUpload(xmlFiles);
+                    } else {
+                        this.updateFileStatus('❌ Please drop .fet or .xml files only', 'error');
+                    }
+                });
+
+                // Tab switching
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        this.switchTab(e.target.dataset.tab);
+                    });
+                });
+
+                // Dropdown changes
+                document.getElementById('teacherSelect').addEventListener('change', (e) => {
+                    this.showTeacherTimetable(e.target.value);
+                });
+
+                document.getElementById('studentSelect').addEventListener('change', (e) => {
+                    this.showStudentTimetable(e.target.value);
+                });
+
+                document.getElementById('roomSelect').addEventListener('change', (e) => {
+                    this.showRoomTimetable(e.target.value);
+                });
+
+                // Settings event listeners
+                document.getElementById('rtlToggle').addEventListener('change', (e) => {
+                    this.toggleRTL(e.target.checked);
+                    this.saveSettings();
+                });
+
+                document.getElementById('dayNamesFormat').addEventListener('change', (e) => {
+                    this.settings.dayNamesFormat = e.target.value;
+                    this.saveSettings();
+                    this.refreshCurrentTimetable();
+                });
+
+                document.getElementById('hourFormat').addEventListener('change', (e) => {
+                    this.settings.hourFormat = e.target.value;
+                    this.saveSettings();
+                    this.refreshCurrentTimetable();
+                });
+
+                // Morning/Afternoon start hour listeners
+                const morningEl = document.getElementById('morningStart');
+                if (morningEl) {
+                    morningEl.addEventListener('change', (e) => {
+                        let v = parseInt(e.target.value, 10);
+                        if (isNaN(v) || v < 0) v = 0;
+                        if (v > 23) v = 23;
+                        this.settings.morningStart = v;
+                        this.saveSettings();
+                        this.refreshCurrentTimetable();
+                    });
+                }
+
+                const afternoonEl = document.getElementById('afternoonStart');
+                if (afternoonEl) {
+                    afternoonEl.addEventListener('change', (e) => {
+                        let v = parseInt(e.target.value, 10);
+                        if (isNaN(v) || v < 0) v = 0;
+                        if (v > 23) v = 23;
+                        this.settings.afternoonStart = v;
+                        this.saveSettings();
+                        this.refreshCurrentTimetable();
+                    });
+                }
+
+                document.getElementById('tableLayout').addEventListener('change', (e) => {
+                    this.settings.tableLayout = e.target.value;
+                    this.saveSettings();
+                    this.refreshCurrentTimetable();
+                });
+
+                document.getElementById('activityColor').addEventListener('change', (e) => {
+                    this.settings.activityColor = e.target.value;
+                    this.saveSettings();
+
+                    // Since we now use different colors per activity, refresh the current timetable
+                    this.refreshCurrentTimetable();
+                });
+
+                document.getElementById('resetSettings').addEventListener('click', () => {
+                    this.resetSettings();
+                });
+
+                // Add print tab radio button event listeners
+                this.setupPrintTabEventListeners();
+            }
+
+            setupPrintTabEventListeners() {
+                // Teacher selection radio buttons
+                document.querySelectorAll('input[name="teacher-selection"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const value = e.target.value;
+                        document.getElementById('individual-teacher').style.display = value === 'individual' ? 'block' : 'none';
+                        document.getElementById('selected-teachers').style.display = value === 'selected' ? 'block' : 'none';
+                    });
+                });
+
+                // Student selection radio buttons
+                document.querySelectorAll('input[name="student-selection"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const value = e.target.value;
+                        document.getElementById('individual-student').style.display = value === 'individual' ? 'block' : 'none';
+                        document.getElementById('selected-students').style.display = value === 'selected' ? 'block' : 'none';
+                    });
+                });
+
+                // Room selection radio buttons
+                document.querySelectorAll('input[name="room-selection"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const value = e.target.value;
+                        document.getElementById('individual-room').style.display = value === 'individual' ? 'block' : 'none';
+                        document.getElementById('selected-rooms').style.display = value === 'selected' ? 'block' : 'none';
+                    });
+                });
+            }
+
+            async handleFileUpload(files) {
+                console.log('=== handleFileUpload START ===');
+                console.log('handleFileUpload called with files:', files);
+                console.log('Files is array?', Array.isArray(files));
+                console.log('Files length:', files ? files.length : 'undefined');
+
+                if (!files || files.length === 0) {
+                    console.log('No files provided');
+                    this.updateFileStatus('⚠️ No files selected', 'error');
+                    return;
+                }
+
+                console.log('Files selected:', files.length);
+                for (let i = 0; i < files.length; i++) {
+                    console.log(`File ${i + 1}: ${files[i].name} (${files[i].size} bytes)`);
+                }
+
+                this.updateFileStatus('Loading files...', 'loading');
+
+                try {
+                    this.showLoading();
+
+                    // Clear previous data
+                    this.data.teachers.clear();
+                    this.data.students.clear();
+                    this.data.rooms.clear();
+                    this.data.activities = [];
+                    this.data.days = [];
+                    this.data.hours = [];
+                    this.data.subjects.clear();
+
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        console.log(`Processing file ${i + 1}/${files.length}: ${file.name} (${file.size} bytes)`);
+                        this.updateFileStatus(`Processing ${file.name}...`, 'loading');
+
+                        const text = await this.readFile(file);
+                        console.log('File read successfully, length:', text.length);
+
+                        await this.parseXML(text, file.name);
+                        console.log('File parsed successfully');
+                    }
+
+                    // Populate dropdowns with error handling and retry
+                    try {
+                        console.log('Attempting to populate dropdowns...');
+                        this.populateDropdowns();
+                    } catch (dropdownError) {
+                        console.error('Error populating dropdowns:', dropdownError);
+                        console.log('Retrying dropdown population in 100ms...');
+
+                        // Retry after a short delay in case DOM needs time to update
+                        setTimeout(() => {
+                            try {
+                                console.log('Retry attempt for dropdown population...');
+                                this.populateDropdowns();
+                            } catch (retryError) {
+                                console.error('Retry failed:', retryError);
+                                this.updateFileStatus('⚠️ Data loaded but dropdowns failed to populate. Use manual functions.', 'error');
+                            }
+                        }, 100);
+                    }
+
+                    const totalItems = this.data.teachers.size + this.data.students.size + this.data.rooms.size;
+                    console.log(`Parse complete - Teachers: ${this.data.teachers.size}, Students: ${this.data.students.size}, Rooms: ${this.data.rooms.size}, Activities: ${this.data.activities.length}`);
+                    this.updateFileStatus(`✅ Successfully loaded ${files.length} file(s). Found ${totalItems} entities and ${this.data.activities.length} activities.`, 'success');
+
+                    // Save the last imported file for auto-loading
+                    if (files.length > 0) {
+                        this.saveLastImportedFile(files[0]);
+                    }
+
+                } catch (error) {
+                    console.error('Error loading files:', error);
+                    this.updateFileStatus(`❌ Error: ${error.message}`, 'error');
+                    this.showError('Error loading files: ' + error.message);
+                }
+            }
+
+            readFile(file) {
+                return new Promise((resolve, reject) => {
+                    if (!file) {
+                        reject(new Error('No file provided'));
+                        return;
+                    }
+
+                    if (file.size === 0) {
+                        reject(new Error('File is empty'));
+                        return;
+                    }
+
+                    if (file.size > 50 * 1024 * 1024) { // 50MB limit
+                        reject(new Error('File is too large (max 50MB)'));
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const result = e.target.result;
+                        if (!result || result.length === 0) {
+                            reject(new Error('File content is empty'));
+                            return;
+                        }
+                        resolve(result);
+                    };
+                    reader.onerror = (e) => reject(new Error(`Failed to read file: ${e.target.error?.message || 'Unknown error'}`));
+                    reader.onabort = (e) => reject(new Error('File reading was aborted'));
+
+                    // Try to read as UTF-8 first, fallback to other encodings if needed
+                    try {
+                        reader.readAsText(file, 'UTF-8');
+                    } catch (err) {
+                        reject(new Error(`Cannot read file: ${err.message}`));
+                    }
+                });
+            }
+
+            async saveLastImportedFile(file) {
+                try {
+                    const text = await this.readFile(file);
+                    const fileInfo = {
+                        name: file.name,
+                        content: text,
+                        size: file.size,
+                        lastModified: file.lastModified,
+                        timestamp: new Date().toISOString()
+                    };
+                    localStorage.setItem('lastImportedTimetable', JSON.stringify(fileInfo));
+                    console.log('Saved last imported file:', file.name);
+                } catch (error) {
+                    console.warn('Could not save last imported file:', error);
+                }
+            }
+
+            loadLastImportedFile() {
+                try {
+                    const savedFile = localStorage.getItem('lastImportedTimetable');
+                    if (savedFile) {
+                        const fileInfo = JSON.parse(savedFile);
+                        console.log('Found last imported file:', fileInfo.name, 'from', fileInfo.timestamp);
+                        return fileInfo;
+                    }
+                } catch (error) {
+                    console.warn('Could not load last imported file:', error);
+                }
+                return null;
+            }
+
+            async autoLoadLastFile() {
+                const lastFile = this.loadLastImportedFile();
+                if (lastFile) {
+                    try {
+                        console.log('Auto-loading last imported file:', lastFile.name);
+                        await this.parseXML(lastFile.content, lastFile.name);
+                        this.populateDropdowns();
+                        this.updateFileStatus(`🔄 Auto-loaded: ${lastFile.name}`, 'success');
+                        return true;
+                    } catch (error) {
+                        console.warn('Could not auto-load last file:', error);
+                        this.updateFileStatus('Last file could not be auto-loaded', 'warning');
+                    }
+                }
+                return false;
+            }
+
+            async parseXML(xmlText, fileName = 'unknown') {
+                console.log(`Parsing XML for file: ${fileName}`);
+
+                if (!xmlText || xmlText.trim().length === 0) {
+                    throw new Error(`File ${fileName} is empty or contains no valid content`);
+                }
+
+                // Check if it looks like XML
+                if (!xmlText.trim().startsWith('<?xml') && !xmlText.trim().startsWith('<')) {
+                    throw new Error(`File ${fileName} does not appear to be a valid XML file`);
+                }
+
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                // Check for parser errors
+                const parseErrors = xmlDoc.getElementsByTagName('parsererror');
+                if (parseErrors.length > 0) {
+                    const errorMsg = parseErrors[0].textContent || 'Unknown XML parsing error';
+                    throw new Error(`Invalid XML format in ${fileName}: ${errorMsg}`);
+                }
+
+                // Check if it's a FET file
+                const fetRoot = xmlDoc.querySelector('fet');
+                if (!fetRoot) {
+                    throw new Error(`File ${fileName} does not appear to be a valid FET file (missing <fet> root element)`);
+                }
+
+                console.log('XML parsed successfully, processing data...');
+
+                // Parse days (virtual days)
+                const days = xmlDoc.querySelectorAll('Days_List Day Name');
+                console.log(`Found ${days.length} days`);
+                days.forEach(day => {
+                    const dayName = day.textContent.trim();
+                    if (dayName && !this.data.days.includes(dayName)) {
+                        this.data.days.push(dayName);
+                    }
+                });
+
+                // Parse real days
+                const realDays = xmlDoc.querySelectorAll('Real_Days_List Real_Day Name');
+                console.log(`Found ${realDays.length} real days`);
+                this.data.realDays = [];
+                realDays.forEach(realDay => {
+                    const dayName = realDay.textContent.trim();
+                    if (dayName && !this.data.realDays.includes(dayName)) {
+                        this.data.realDays.push(dayName);
+                    }
+                });
+
+                // Parse hours
+                const hours = xmlDoc.querySelectorAll('Hours_List Hour Name');
+                console.log(`Found ${hours.length} hours`);
+                hours.forEach(hour => {
+                    const hourName = hour.textContent.trim();
+                    if (hourName && !this.data.hours.includes(hourName)) {
+                        this.data.hours.push(hourName);
+                    }
+                });
+
+                // Parse subjects
+                const subjects = xmlDoc.querySelectorAll('Subjects_List Subject');
+                console.log(`Found ${subjects.length} subjects`);
+                subjects.forEach(subject => {
+                    const nameElement = subject.querySelector('Name');
+                    if (nameElement) {
+                        const name = nameElement.textContent.trim();
+                        if (name) {
+                            this.data.subjects.set(name, {
+                                name: name,
+                                longName: subject.querySelector('Long_Name')?.textContent?.trim() || '',
+                                code: subject.querySelector('Code')?.textContent?.trim() || ''
+                            });
+                        }
+                    }
+                });
+
+                // Parse teachers
+                const teachers = xmlDoc.querySelectorAll('Teachers_List Teacher');
+                console.log(`Found ${teachers.length} teachers`);
+                teachers.forEach(teacher => {
+                    const nameElement = teacher.querySelector('Name');
+                    if (nameElement) {
+                        const name = nameElement.textContent.trim();
+                        if (name) {
+                            this.data.teachers.set(name, {
+                                name: name,
+                                longName: teacher.querySelector('Long_Name')?.textContent?.trim() || '',
+                                code: teacher.querySelector('Code')?.textContent?.trim() || '',
+                                activities: []
+                            });
+                        }
+                    }
+                });
+
+                // Parse students (groups)
+                const groups = xmlDoc.querySelectorAll('Students_List Group');
+                console.log(`Found ${groups.length} student groups`);
+                groups.forEach(group => {
+                    const nameElement = group.querySelector('Name');
+                    if (nameElement) {
+                        const name = nameElement.textContent.trim();
+                        if (name) {
+                            this.data.students.set(name, {
+                                name: name,
+                                longName: group.querySelector('Long_Name')?.textContent?.trim() || '',
+                                code: group.querySelector('Code')?.textContent?.trim() || '',
+                                activities: []
+                            });
+                        }
+                    }
+                });
+
+                // Parse rooms
+                const rooms = xmlDoc.querySelectorAll('Rooms_List Room');
+                console.log(`Found ${rooms.length} rooms`);
+                rooms.forEach(room => {
+                    const nameElement = room.querySelector('Name');
+                    if (nameElement) {
+                        const name = nameElement.textContent.trim();
+                        if (name) {
+                            this.data.rooms.set(name, {
+                                name: name,
+                                longName: room.querySelector('Long_Name')?.textContent?.trim() || '',
+                                code: room.querySelector('Code')?.textContent?.trim() || '',
+                                capacity: room.querySelector('Capacity')?.textContent?.trim() || '',
+                                activities: []
+                            });
+                        }
+                    }
+                });
+
+                // Parse activities
+                const activities = xmlDoc.querySelectorAll('Activities_List Activity');
+                console.log(`Found ${activities.length} activities`);
+                activities.forEach(activity => {
+                    const teacher = activity.querySelector('Teacher')?.textContent?.trim() || '';
+                    const subject = activity.querySelector('Subject')?.textContent?.trim() || '';
+                    const students = activity.querySelector('Students')?.textContent?.trim() || '';
+                    const id = activity.querySelector('Id')?.textContent?.trim() || '';
+                    const duration = parseInt(activity.querySelector('Duration')?.textContent?.trim() || '1');
+
+                    const activityData = {
+                        id: id,
+                        teacher: teacher,
+                        subject: subject,
+                        students: students,
+                        duration: duration,
+                        room: '', // Will be filled from constraints if available
+                        day: '',
+                        hour: ''
+                    };
+
+                    this.data.activities.push(activityData);
+
+                    // Add to teacher's activities
+                    if (teacher && this.data.teachers.has(teacher)) {
+                        this.data.teachers.get(teacher).activities.push(activityData);
+                    }
+
+                    // Add to student's activities
+                    if (students && this.data.students.has(students)) {
+                        this.data.students.get(students).activities.push(activityData);
+                    }
+                });
+
+                // Try to parse time constraints for actual scheduling
+                this.parseTimeConstraints(xmlDoc);
+            }
+
+            parseTimeConstraints(xmlDoc) {
+                console.log('Parsing time constraints for actual scheduling...');
+
+                // Parse ConstraintActivityPreferredStartingTime with 100% weight (locked times)
+                const preferredTimes = xmlDoc.querySelectorAll('ConstraintActivityPreferredStartingTime');
+                console.log(`Found ${preferredTimes.length} preferred starting time constraints`);
+
+                preferredTimes.forEach(constraint => {
+                    const weight = constraint.querySelector('Weight_Percentage')?.textContent?.trim();
+                    const activityId = constraint.querySelector('Activity_Id')?.textContent?.trim();
+                    const day = constraint.querySelector('Day')?.textContent?.trim();
+                    const hour = constraint.querySelector('Hour')?.textContent?.trim();
+                    const active = constraint.querySelector('Active')?.textContent?.trim();
+
+                    // Only use constraints with 100% weight (locked) and active
+                    if (weight === '100' && active === 'true' && activityId && day && hour) {
+                        // Find the activity and assign its time
+                        const activity = this.data.activities.find(act => act.id === activityId);
+                        if (activity) {
+                            activity.day = day;
+                            activity.hour = hour;
+                        }
+                    }
+                });
+
+                // Also parse room assignments from space constraints
+                this.parseSpaceConstraints(xmlDoc);
+            }
+
+            parseSpaceConstraints(xmlDoc) {
+                console.log('Parsing space constraints for room assignments...');
+
+                // Parse ConstraintActivityPreferredRoom with 100% weight
+                const preferredRooms = xmlDoc.querySelectorAll('ConstraintActivityPreferredRoom');
+                console.log(`Found ${preferredRooms.length} preferred room constraints`);
+
+                preferredRooms.forEach(constraint => {
+                    const weight = constraint.querySelector('Weight_Percentage')?.textContent?.trim();
+                    const activityId = constraint.querySelector('Activity_Id')?.textContent?.trim();
+                    const room = constraint.querySelector('Room')?.textContent?.trim();
+                    const active = constraint.querySelector('Active')?.textContent?.trim();
+
+                    // Only use constraints with 100% weight (locked) and active
+                    if (weight === '100' && active === 'true' && activityId && room) {
+                        // Find the activity and assign its room
+                        const activity = this.data.activities.find(act => act.id === activityId);
+                        if (activity) {
+                            activity.room = room;
+                        }
+                    }
+                });
+            }
+
+            populateDropdowns() {
+                console.log('Populating dropdowns...');
+                console.log('DOM ready state:', document.readyState);
+
+                // Log all select elements in the document
+                const allSelects = document.querySelectorAll('select');
+                console.log('Found select elements:', allSelects.length);
+                // Optionally log select elements for debugging — disabled to reduce console noise
+                // allSelects.forEach((select, index) => {
+                //     console.log(`Select ${index}: id="${select.id}", exists=${!!select}`);
+                // });
+
+                // Populate teachers dropdown
+                const teacherSelect = document.getElementById('teacherSelect');
+                console.log('Teacher select lookup result:', teacherSelect);
+                if (!teacherSelect) {
+                    console.error('Teacher select element not found!');
+                    console.log('Available elements with teacherSelect id:', document.querySelectorAll('#teacherSelect'));
+                    return;
+                }
+
+                console.log(`Populating ${this.data.teachers.size} teachers`);
+                teacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
+                // Group teachers by subject and render optgroups
+                const grouped = this.getTeachersGroupedBySubject();
+                Array.from(grouped.keys()).sort(this.collator.compare).forEach(subject => {
+                    const opt = document.createElement('optgroup');
+                    opt.label = subject;
+                    grouped.get(subject).forEach(teacher => {
+                        const option = document.createElement('option');
+                        option.value = teacher;
+                        option.textContent = teacher;
+                        opt.appendChild(option);
+                    });
+                    teacherSelect.appendChild(opt);
+                });
+
+                // Populate students dropdown
+                const studentSelect = document.getElementById('studentSelect');
+                if (!studentSelect) {
+                    console.error('Student select element not found!');
+                    return;
+                }
+
+                // Get all student groups including those mentioned in activities
+                const allStudentGroups = this.getAllStudentGroups();
+
+                console.log(`Populating ${allStudentGroups.size} student groups (including subgroups)`);
+                studentSelect.innerHTML = '<option value="">Choose a student group...</option>';
+                Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student;
+                    option.textContent = student;
+                    studentSelect.appendChild(option);
+                });
+
+                // Populate rooms dropdown
+                const roomSelect = document.getElementById('roomSelect');
+                if (!roomSelect) {
+                    console.error('Room select element not found!');
+                    return;
+                }
+
+                console.log(`Populating ${this.data.rooms.size} rooms`);
+                roomSelect.innerHTML = '<option value="">Choose a room...</option>';
+                Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
+                    const option = document.createElement('option');
+                    option.value = room;
+                    option.textContent = room;
+                    roomSelect.appendChild(option);
+                });
+
+                console.log('Dropdowns populated successfully');
+
+                // Create custom inputs now that data is loaded
+                this.createCustomInputs();
+
+                // Populate print dropdowns
+                this.populatePrintDropdowns();
+            }
+
+            populatePrintDropdowns() {
+                // Populate print teacher dropdown
+                const printTeacherSelect = document.getElementById('printTeacherSelect');
+                if (printTeacherSelect) {
+                    printTeacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
+                    Array.from(this.data.teachers.keys()).sort(this.teacherSubjectNameComparator.bind(this)).forEach(teacher => {
+                        const option = document.createElement('option');
+                        option.value = teacher;
+                        option.textContent = teacher;
+                        printTeacherSelect.appendChild(option);
+                    });
+                }
+
+                // Populate print student dropdown
+                const printStudentSelect = document.getElementById('printStudentSelect');
+                if (printStudentSelect) {
+                    const allStudentGroups = this.getAllStudentGroups();
+                    printStudentSelect.innerHTML = '<option value="">Choose a student group...</option>';
+                    Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
+                        const option = document.createElement('option');
+                        option.value = student;
+                        option.textContent = student;
+                        printStudentSelect.appendChild(option);
+                    });
+                }
+
+                // Populate print room dropdown
+                const printRoomSelect = document.getElementById('printRoomSelect');
+                if (printRoomSelect) {
+                    printRoomSelect.innerHTML = '<option value="">Choose a room...</option>';
+                    Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
+                        const option = document.createElement('option');
+                        option.value = room;
+                        option.textContent = room;
+                        printRoomSelect.appendChild(option);
+                    });
+                }
+
+                // Create checkbox lists for multiple selection
+                this.createCheckboxLists();
+            }
+
+            createCheckboxLists() {
+                // Create teacher checkboxes
+                const teacherList = document.getElementById('teacherCheckboxList');
+                if (teacherList) {
+                    teacherList.innerHTML = '';
+                    Array.from(this.data.teachers.keys()).sort(this.teacherSubjectNameComparator.bind(this)).forEach(teacher => {
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="checkbox" value="${teacher}"> ${teacher}`;
+                        teacherList.appendChild(label);
+                    });
+                }
+
+                // Create student checkboxes
+                const studentList = document.getElementById('studentCheckboxList');
+                if (studentList) {
+                    const allStudentGroups = this.getAllStudentGroups();
+                    studentList.innerHTML = '';
+                    Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="checkbox" value="${student}"> ${student}`;
+                        studentList.appendChild(label);
+                    });
+                }
+
+                // Create room checkboxes
+                const roomList = document.getElementById('roomCheckboxList');
+                if (roomList) {
+                    roomList.innerHTML = '';
+                    Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="checkbox" value="${room}"> ${room}`;
+                        roomList.appendChild(label);
+                    });
+                }
+            }
+
+            printTimetables(type) {
+                const selectionType = document.querySelector(`input[name="${type}-selection"]:checked`).value;
+                let entities = [];
+
+                if (selectionType === 'individual') {
+                    const selectElement = document.getElementById(`print${type.charAt(0).toUpperCase() + type.slice(1)}Select`);
+                    const selected = selectElement.value;
+                    if (selected) {
+                        entities = [selected];
+                    } else {
+                        alert(`Please select a ${type} to print.`);
+                        return;
+                    }
+                } else if (selectionType === 'selected') {
+                    const checkboxes = document.querySelectorAll(`#${type}CheckboxList input[type="checkbox"]:checked`);
+                    entities = Array.from(checkboxes).map(cb => cb.value);
+                    if (entities.length === 0) {
+                        alert(`Please select at least one ${type} to print.`);
+                        return;
+                    }
+                } else if (selectionType === 'all') {
+                    if (type === 'teacher') {
+                        entities = Array.from(this.data.teachers.keys());
+                    } else if (type === 'student') {
+                        entities = Array.from(this.getAllStudentGroups());
+                    } else if (type === 'room') {
+                        entities = Array.from(this.data.rooms.keys());
+                    }
+                }
+
+                this.generatePrintView(type, entities);
+            }
+
+            printAllTimetables() {
+                const teachers = Array.from(this.data.teachers.keys());
+                const students = Array.from(this.getAllStudentGroups());
+                const rooms = Array.from(this.data.rooms.keys());
+
+                this.generatePrintView('all', { teachers, students, rooms });
+            }
+
+            generatePrintView(type, entities) {
+                // Create a new window for printing
+                const printWindow = window.open('', '_blank');
+
+                let html = `
+                    <!DOCTYPE html>
+                    <html lang="${this.settings.rtl ? 'ar' : 'en'}" dir="${this.settings.rtl ? 'rtl' : 'ltr'}">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>Timetable Print View</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; direction: ${this.settings.rtl ? 'rtl' : 'ltr'}; background: white; color: black; }
+                            .teacher-section { page-break-after: always; page-break-inside: avoid; }
+                            .teacher-info { margin-bottom: 15px; padding: 10px; background: white; border-${this.settings.rtl ? 'right' : 'left'}: 2px solid black; }
+                            .teacher-info h3 { margin: 0 0 10px 0; color: black; }
+                            .subjects-list { margin: 5px 0; font-size: 14px; color: black; }
+                            .total-hours { margin: 5px 0; font-weight: bold; color: black; }
+                            .timetable { width: 100%; border-collapse: collapse; margin-bottom: 20px; direction: ${this.settings.rtl ? 'rtl' : 'ltr'}; background: white; }
+                            .timetable th, .timetable td { padding: 8px; text-align: center; border: 1px solid black; font-size: 12px; background: white; color: black; }
+                            .timetable th { background: white; font-weight: bold; border: 2px solid black; }
+                            .timetable td.empty-slot { background: #7a7a7a !important; }
+                            .activity { background: white !important; margin: 2px; padding: 4px; border: none; border-radius: 0; }
+                            .subject { font-weight: bold; color: black; }
+                            .room { font-size: 10px; color: black; }
+                            .subgroup { font-size: 10px; color: black; font-weight: bold; }
+                            h1 { color: black; text-align: center; margin-bottom: 30px; }
+                            h2 { color: black; margin: 30px 0 20px 0; border-bottom: 2px solid black; padding-bottom: 5px; }
+                            
+                            /* RTL specific styles */
+                            ${this.settings.rtl ? `
+                                body { text-align: right; }
+                                .timetable th, .timetable td { text-align: center; }
+                                .teacher-info { text-align: right; }
+                                h1, h2, h3 { text-align: right; }
+                                .subjects-list, .total-hours { text-align: right; }
+                            ` : `
+                                body { text-align: left; }
+                                .teacher-info { text-align: left; }
+                                h1 { text-align: center; }
+                                h2, h3 { text-align: left; }
+                                .subjects-list, .total-hours { text-align: left; }
+                            `}
+                            
+                            @media print {
+                                .teacher-section { page-break-after: always; page-break-inside: avoid; }
+                                h1 { page-break-after: always; }
+                                body { margin: 0; }
+                                /* Force black text and neutral backgrounds in printed output */
+                                *, *::before, *::after {
+                                    color: #000 !important;
+                                    background: transparent !important;
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
+                                }
+                                .activity, .activity * {
+                                    background: transparent !important;
+                                    color: #000 !important;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                `;
+
+                if (type === 'all') {
+                    // Print all types
+                    html += '<h1>Complete Timetable Report</h1>';
+
+                    html += '<h2>Teachers</h2>';
+                    entities.teachers.forEach(teacher => {
+                        html += '<div class="teacher-section">';
+                        const teacherActivities = this.data.activities.filter(a => a.teacher === teacher);
+                        const subjects = [...new Set(teacherActivities.map(a => a.subject))];
+                        const totalHours = this.computeTotalHours(teacherActivities);
+
+                        html += `<div class="teacher-info">`;
+                        html += `<h3>${teacher}</h3>`;
+                        html += `<div class="subjects-list"><strong>Subjects:</strong> ${subjects.join(', ')}</div>`;
+                        html += `<div class="total-hours"><strong>Total Hours:</strong> ${totalHours}h</div>`;
+                        html += `</div>`;
+                        html += this.generateTimetable(teacherActivities, 'teacher', teacher);
+                        html += '</div>';
+                    });
+
+                    // Ensure teacher timetables are grouped first; start next content on a new page
+                    html += '<div style="page-break-before: always;"></div>';
+
+                    // Teachers table: subjects -> teachers (printed on its own page)
+                    html += '<h2>Teachers Table</h2>';
+                    html += '<div class="teacher-section">';
+                    // Build subject -> teachers map
+                    const subjMap = {};
+                    this.data.activities.forEach(a => {
+                        if (!a.subject) return;
+                        if (!subjMap[a.subject]) subjMap[a.subject] = new Set();
+                        if (a.teacher) subjMap[a.subject].add(a.teacher);
+                    });
+                    const subjEntries = Object.entries(subjMap).map(([s, set]) => [s, Array.from(set)]);
+                    if (subjEntries.length > 0) {
+                        html += '<table class="teachers-table">';
+                        for (let i = 0; i < subjEntries.length; i += 2) {
+                            html += '<tr>';
+                            const [sub1, t1] = subjEntries[i];
+                            html += `<td class="subject-cell"><strong>${sub1}</strong></td>`;
+                            html += `<td class="teacher-cell">${t1.join(', ')}</td>`;
+                            if (i + 1 < subjEntries.length) {
+                                const [sub2, t2] = subjEntries[i + 1];
+                                html += `<td class="subject-cell"><strong>${sub2}</strong></td>`;
+                                html += `<td class="teacher-cell">${t2.join(', ')}</td>`;
+                            } else {
+                                html += `<td class="subject-cell"></td><td class="teacher-cell"></td>`;
+                            }
+                            html += '</tr>';
+                        }
+                        html += '</table>';
+                    }
+                    html += '</div>';
+
+                    // Now start Students section
+                    html += '<h2>Students</h2>';
+                    entities.students.forEach(student => {
+                        html += '<div class="teacher-section">';
+                        const studentActivities = this.getStudentAndSubgroupActivities(student);
+                        const subjects = [...new Set(studentActivities.map(a => a.subject))];
+                        const totalHours = this.computeTotalHours(studentActivities);
+
+                        html += `<div class="teacher-info">`;
+                        html += `<h3>${student}</h3>`;
+                        html += `</div>`;
+                        html += this.generateTimetable(studentActivities, 'student', student);
+                        html += '</div>';
+                    });
+
+                    html += '<h2>Rooms</h2>';
+                    entities.rooms.forEach(room => {
+                        html += '<div class="teacher-section">';
+                        const roomActivities = this.data.activities.filter(a => a.room === room);
+                        const subjects = [...new Set(roomActivities.map(a => a.subject))];
+                        const totalHours = this.computeTotalHours(roomActivities);
+
+                        html += `<div class="teacher-info">`;
+                        html += `<h3>${room}</h3>`;
+                        html += `<div class="subjects-list"><strong>Used for:</strong> ${subjects.join(', ')}</div>`;
+                        html += `<div class="total-hours"><strong>Total Usage:</strong> ${totalHours}h</div>`;
+                        html += `</div>`;
+                        html += this.generateTimetable(roomActivities, 'room', room);
+                        html += '</div>';
+                    });
+                } else {
+                    // Print single type
+                    html += `<h1>${type.charAt(0).toUpperCase() + type.slice(1)} Timetables</h1>`;
+                    entities.forEach(entity => {
+                        html += '<div class="teacher-section">';
+                        let entityActivities = [];
+
+                        if (type === 'teacher') {
+                            entityActivities = this.data.activities.filter(a => a.teacher === entity);
+                        } else if (type === 'student') {
+                            entityActivities = this.getStudentAndSubgroupActivities(entity);
+                        } else if (type === 'room') {
+                            entityActivities = this.data.activities.filter(a => a.room === entity);
+                        }
+
+                        const subjects = [...new Set(entityActivities.map(a => a.subject))];
+                        const totalHours = this.computeTotalHours(entityActivities);
+
+                        html += `<div class="teacher-info">`;
+                        html += `<h3>${entity}</h3>`;
+                        if (type === 'teacher') {
+                            html += `<div class="subjects-list"><strong>Subjects:</strong> ${subjects.join(', ')}</div>`;
+                            html += `<div class="total-hours"><strong>Total Hours:</strong> ${totalHours}h</div>`;
+                        } else if (type === 'student') {
+                            html += `<div class="subjects-list"><strong>Subjects:</strong> ${subjects.join(', ')}</div>`;
+                        } else if (type === 'room') {
+                            html += `<div class="subjects-list"><strong>Used for:</strong> ${subjects.join(', ')}</div>`;
+                            html += `<div class="total-hours"><strong>Total Usage:</strong> ${totalHours}h</div>`;
+                        }
+                        html += `</div>`;
+                        html += this.generateTimetable(entityActivities, type, entity);
+                        html += '</div>';
+                    });
+                }
+
+                html += '</body></html>';
+
+                printWindow.document.write(html);
+                printWindow.document.close();
+
+                // Wait a moment for content to load, then print
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+            }
+
+            switchTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-content`).classList.add('active');
+
+                this.currentTab = tabName;
+            }
+
+            showTeacherTimetable(teacherName) {
+                if (!teacherName) {
+                    document.getElementById('teacherTimetable').innerHTML = '';
+                    return;
+                }
+
+                const teacher = this.data.teachers.get(teacherName);
+                if (!teacher) return;
+
+                const timetable = this.generateTimetable(teacher.activities, 'teacher', teacherName);
+                document.getElementById('teacherTimetable').innerHTML = timetable;
+            }
+
+            showStudentTimetable(studentName) {
+                if (!studentName) {
+                    document.getElementById('studentTimetable').innerHTML = '';
+                    return;
+                }
+
+                // Get all activities for this student/group including subgroups
+                const allStudentActivities = this.getStudentAndSubgroupActivities(studentName);
+
+                const timetable = this.generateTimetable(allStudentActivities, 'student', studentName);
+                document.getElementById('studentTimetable').innerHTML = timetable;
+            }
+
+            getStudentAndSubgroupActivities(studentName) {
+                const activities = [];
+
+                // Get direct activities for the student/group
+                const student = this.data.students.get(studentName);
+                if (student && student.activities) {
+                    activities.push(...student.activities);
+                }
+
+                // Get activities from all subgroups and from activities that list multiple groups
+                // Split activity.students on common separators (comma, semicolon, slash) and trim
+                this.data.activities.forEach(activity => {
+                    if (!activity.students) return;
+
+                    const studentParts = activity.students.split(/[,;\/]+/).map(s => s.trim()).filter(Boolean);
+
+                    // If any listed student equals the selected student, include the activity
+                    if (studentParts.includes(studentName)) {
+                        activities.push(activity);
+                        return;
+                    }
+
+                    // If any listed student is a subgroup of the selected student (e.g. "Group-Sub")
+                    // or listed student starts with selectedName + '-', include it
+                    for (const part of studentParts) {
+                        if (part.startsWith(studentName + '-')) {
+                            activities.push(activity);
+                            break;
+                        }
+                    }
+
+                    // Also check if the current selection is itself a subgroup and include activities for the parent group
+                    const parts = studentName.split('-');
+                    if (parts.length > 1) {
+                        const parentGroup = parts.slice(0, -1).join('-');
+                        if (studentParts.includes(parentGroup)) {
+                            activities.push(activity);
+                        }
+                    }
+                });
+
+                // Remove duplicates based on activity ID
+                const uniqueActivities = activities.filter((activity, index, self) =>
+                    index === self.findIndex(a => a.id === activity.id)
+                );
+
+                console.log(`Found ${uniqueActivities.length} total activities for ${studentName} (including subgroups)`);
+                return uniqueActivities;
+            }
+
+            getAllStudentGroups() {
+                const allGroups = new Set();
+
+                // Add groups from XML definition
+                this.data.students.forEach((student, name) => {
+                    allGroups.add(name);
+                });
+
+                // Add groups mentioned in activities (including subgroups)
+                this.data.activities.forEach(activity => {
+                    if (activity.students && activity.students.trim()) {
+                        allGroups.add(activity.students.trim());
+                    }
+                });
+
+                return allGroups;
+            }
+
+            showRoomTimetable(roomName) {
+                if (!roomName) {
+                    document.getElementById('roomTimetable').innerHTML = '';
+                    return;
+                }
+
+                const room = this.data.rooms.get(roomName);
+                if (!room) return;
+
+                // Find activities that use this room
+                const roomActivities = this.data.activities.filter(activity =>
+                    activity.room === roomName
+                );
+
+                const timetable = this.generateTimetable(roomActivities, 'room', roomName);
+                document.getElementById('roomTimetable').innerHTML = timetable;
+            }
+
+            // Return a canonical subject key for a teacher (first subject or joined subjects)
+            getTeacherPrimarySubject(teacherName) {
+                const teacher = this.data.teachers.get(teacherName);
+                if (!teacher || !teacher.activities) return '';
+                const subjects = [...new Set(teacher.activities.map(a => (a.subject || '').trim()).filter(Boolean))];
+                // Prefer the first subject if available, otherwise join
+                return subjects.length === 0 ? '' : subjects.join(', ');
+            }
+
+            // Comparator that sorts by teacher's primary subject then by teacher name
+            teacherSubjectNameComparator(a, b) {
+                const subA = this.getTeacherPrimarySubject(a).toLowerCase();
+                const subB = this.getTeacherPrimarySubject(b).toLowerCase();
+                if (subA !== subB) {
+                    return subA < subB ? -1 : 1;
+                }
+                // Fall back to numeric-aware collator for names
+                return this.collator.compare(a, b);
+            }
+
+            // Group teachers by their primary subject (returns Map<subject, [teacherName]>)
+            getTeachersGroupedBySubject() {
+                const groups = new Map();
+                Array.from(this.data.teachers.keys()).forEach(teacher => {
+                    const subj = (this.getTeacherPrimarySubject(teacher) || 'Unassigned').split(',')[0].trim();
+                    if (!groups.has(subj)) groups.set(subj, []);
+                    groups.get(subj).push(teacher);
+                });
+                // Sort each group's teacher names
+                groups.forEach((arr, key) => {
+                    arr.sort(this.collator.compare);
+                });
+                return groups;
+            }
+
+            generateTimetable(activities, type, entityName = '') {
+                // Ensure activities is an array
+                if (!activities) {
+                    activities = [];
+                } else if (!Array.isArray(activities)) {
+                    console.error('Activities is not an array:', activities);
+                    activities = [];
+                }
+
+                if (activities.length === 0) {
+                    return '<div class="info-panel">No activities scheduled.</div>';
+                }
+
+                const dayNames = this.getDayNames();
+                const hourNames = this.getHourNames();
+                const isVertical = this.settings.tableLayout === 'vertical';
+
+                let html = '';
+
+                html += '<table class="timetable"><thead><tr>';
+
+                if (isVertical) {
+                    // Vertical layout: Days as rows, Hours as columns
+                    if (type === 'teacher') {
+                        const teacherActivities = activities.filter(a => a.teacher === entityName);
+                        const totalHours = this.computeTotalHours(teacherActivities);
+                        html += `<th class="day-header">${totalHours}h</th>`;
+                    } else if (type === 'student') {
+                        const studentActivities = activities.filter(a => a.students === entityName || (a.students && a.students.includes && a.students.includes(entityName)));
+                        const totalHours = this.computeTotalHours(studentActivities);
+                        html += `<th class="day-header">${totalHours}h</th>`;
+                    } else if (type === 'room') {
+                        const roomActivities = activities.filter(a => a.room === entityName);
+                        const totalHours = this.computeTotalHours(roomActivities);
+                        html += `<th class="day-header">${totalHours}h</th>`;
+                    } else {
+                        html += '<th class="day-header">Day</th>';
+                    }
+                    hourNames.forEach((hour, index) => {
+                        html += `<th>${hour}</th>`;
+                    });
+                } else {
+                    // Horizontal layout: Hours as rows, Days as columns
+                    html += '<th class="time-header">Time</th>';
+                    dayNames.forEach(day => {
+                        html += `<th>${day}</th>`;
+                    });
+                }
+                html += '</tr></thead><tbody>';
+
+                if (isVertical) {
+                    // Generate rows for each day
+                    dayNames.forEach((dayName, dayIndex) => {
+                        // Calculate total hours for this day (for teachers)
+                        let dayTotalHours = 0;
+                        if (type === 'teacher') {
+                            const virtualDaysForRealDay = this.getVirtualDaysForRealDay(dayIndex);
+                            const dayActivities = activities.filter(activity =>
+                                virtualDaysForRealDay.includes(activity.day)
+                            );
+                            dayTotalHours = this.computeTotalHours(dayActivities);
+                        }
+
+                        const dayHeaderContent = type === 'teacher' ?
+                            `<strong>${dayName}</strong><br><small>${dayTotalHours}h</small>` :
+                            `<strong>${dayName}</strong>`;
+
+                        html += `<tr><td class="day-header">${dayHeaderContent}</td>`;
+
+                        // Track which hour slots are occupied by spanned activities
+                        const occupiedSlots = new Set();
+
+                        hourNames.forEach((hourName, hourIndex) => {
+                            // Skip this cell if it's occupied by a previous activity's span
+                            if (occupiedSlots.has(hourIndex)) {
+                                return;
+                            }
+
+                            // Find all virtual days that belong to this real day
+                            const virtualDaysForRealDay = this.getVirtualDaysForRealDay(dayIndex);
+
+                            // Get the actual hour and virtual day for this expanded hour index
+                            const { actualHour, virtualDayOffset } = this.getActualHourAndDay(hourIndex);
+                            const targetVirtualDay = virtualDaysForRealDay[virtualDayOffset] || virtualDaysForRealDay[0];
+
+                            // Find activities that start at this specific time slot
+                            const slotActivities = activities.filter(activity => {
+                                return activity.day === targetVirtualDay && activity.hour === actualHour;
+                            });
+
+                            // Calculate colspan for activities with duration > 1
+                            let cellColspan = 1;
+                            let cellContent = '';
+
+                            // For students with multiple activities in same slot, handle differently
+                            if (type === 'student' && slotActivities.length > 1) {
+                                // For multiple activities, use a mixed color approach or first activity's subject color
+                                const primaryActivity = slotActivities[0];
+                                const backgroundColor = this.getActivityBackgroundColor(primaryActivity, type);
+                                const textColor = this.getContrastTextColor(backgroundColor);
+                                cellContent += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
+                                const isSubSelection = entityName && entityName.includes('-');
+                                const parentOfSelection = isSubSelection ? entityName.split('-').slice(0, -1).join('-') : null;
+                                slotActivities.forEach((activity, index) => {
+                                    if (index > 0) cellContent += '<hr class="activity-separator">';
+                                    cellContent += `<div class="subject">${activity.subject}</div>`;
+                                    // Show subgroup name if different from selected group
+                                    if (activity.students && activity.students !== entityName) {
+                                        // But don't show the parent group label when we're viewing a subgroup
+                                        if (!(isSubSelection && activity.students === parentOfSelection)) {
+                                            cellContent += `<div class="subgroup">${activity.students}</div>`;
+                                        }
+                                    }
+                                    cellContent += `<div class="room">${activity.room || ''}</div>`;
+                                });
+                                cellContent += '</div>';
+                            } else {
+                                slotActivities.forEach(activity => {
+                                    const duration = activity.duration || 1;
+
+                                    // Calculate how many expanded hour slots this activity spans
+                                    let actualSpan = duration;
+
+                                    // For activities spanning multiple base hours, we need to account for 
+                                    // the expanded hour structure
+                                    if (this.data.realDays.length > 0 && this.data.days.length > this.data.realDays.length) {
+                                        // We're in expanded mode, but duration is in base hours
+                                        // So we don't multiply by virtual days
+                                        actualSpan = duration;
+                                    }
+
+                                    cellColspan = Math.max(cellColspan, actualSpan);
+
+                                    // Mark the spanned slots as occupied
+                                    for (let i = 1; i < actualSpan; i++) {
+                                        occupiedSlots.add(hourIndex + i);
+                                    }
+
+                                    const backgroundColor = this.getActivityBackgroundColor(activity, type);
+                                    const textColor = this.getContrastTextColor(backgroundColor);
+                                    cellContent += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
+                                    if (type === 'teacher') {
+                                        // Subject is shown in the teacher header; omit from activity block
+                                        cellContent += `<div class="class-group">${activity.students}</div>`;
+                                        if (activity.room && activity.room !== '') {
+                                            cellContent += `<div class="room">${activity.room}</div>`;
+                                        }
+                                    } else if (type === 'student') {
+                                        cellContent += `<div class="subject">${activity.subject}</div>`;
+                                        // Show subgroup name if different from selected group
+                                        if (activity.students && activity.students !== entityName) {
+                                            // Don't show parent group label when viewing a subgroup
+                                            const isSubSelectionSingle = entityName && entityName.includes('-');
+                                            const parentOfSelectionSingle = isSubSelectionSingle ? entityName.split('-').slice(0, -1).join('-') : null;
+                                            if (!(isSubSelectionSingle && activity.students === parentOfSelectionSingle)) {
+                                                cellContent += `<div class="subgroup">${activity.students}</div>`;
+                                            }
+                                        }
+                                        cellContent += `<div class="room">${activity.room || ''}</div>`;
+                                    } else if (type === 'room') {
+                                        cellContent += `<div class="subject">${activity.subject}</div>`;
+                                        cellContent += `<div class="teacher">${activity.teacher}</div>`;
+                                        cellContent += `<div class="students">${activity.students}</div>`;
+                                    }
+
+                                    cellContent += '</div>';
+                                });
+                            }
+
+                            // Create the cell with appropriate colspan
+                            const colspanAttr = cellColspan > 1 ? ` colspan="${cellColspan}"` : '';
+                            const emptyClass = cellContent.trim() === '' ? ' class="empty-slot"' : '';
+                            html += `<td${colspanAttr}${emptyClass}>${cellContent}</td>`;
+                        });
+
+                        html += '</tr>';
+                    });
+                } else {
+                    // Generate rows for each hour (horizontal layout)
+                    // Track which hours have activities that span multiple hours to avoid duplication
+                    const processedActivities = new Set();
+
+                    hourNames.forEach((hourName, hourIndex) => {
+                        html += `<tr><td class="time-header"><strong>${hourName}</strong></td>`;
+
+                        // Get the actual hour and virtual day for this expanded hour index
+                        const { actualHour, virtualDayOffset } = this.getActualHourAndDay(hourIndex);
+
+                        dayNames.forEach((dayName, dayIndex) => {
+                            // Find all virtual days that belong to this real day
+                            const virtualDaysForRealDay = this.getVirtualDaysForRealDay(dayIndex);
+                            const targetVirtualDay = virtualDaysForRealDay[virtualDayOffset] || virtualDaysForRealDay[0];
+
+                            // Find activities that start at this specific time slot
+                            const slotActivities = activities.filter(activity => {
+                                return activity.day === targetVirtualDay && activity.hour === actualHour &&
+                                    !processedActivities.has(activity.id);
+                            });
+
+                            const emptyClass = slotActivities.length === 0 ? ' class="empty-slot"' : '';
+                            html += `<td${emptyClass}>`;
+
+                            slotActivities.forEach(activity => {
+                                const duration = activity.duration || 1;
+
+                                // Mark this activity as processed
+                                processedActivities.add(activity.id);
+
+                                // Create activity with duration indicator
+                                const backgroundColor = this.getActivityBackgroundColor(activity, type);
+                                const textColor = this.getContrastTextColor(backgroundColor);
+                                html += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
+                                if (type === 'teacher') {
+                                    // Subject shown in header; omit subject inside activity block for teachers
+                                    html += `<div class="class-group">${activity.students}</div>`;
+                                } else if (type === 'student') {
+                                    html += `<div class="subject">${activity.subject}</div>`;
+                                    html += `<div class="room">${activity.room || ''}</div>`;
+                                } else if (type === 'room') {
+                                    html += `<div class="subject">${activity.subject}</div>`;
+                                    html += `<div class="teacher">${activity.teacher}</div>`;
+                                    html += `<div class="students">${activity.students}</div>`;
+                                }
+
+                                html += '</div>';
+                            });
+
+                            html += '</td>';
+                        });
+
+                        html += '</tr>';
+                    });
+                }
+
+                html += '</tbody></table>';
+
+                // Add assigned classes for teachers
+                if (type === 'teacher' && entityName) {
+                    const teacherActivities = activities.filter(a => a.teacher === entityName);
+                    const assignedClasses = [...new Set(teacherActivities.map(a => a.students))];
+                    if (assignedClasses.length > 0) {
+                        html += `<div class="assigned-classes">
+                            <h4>Assigned Classes:</h4>
+                            <div class="classes-list">${assignedClasses.join(', ')}</div>
+                        </div>`;
+                    }
+                }
+
+                // Add teachers list for students
+                if (type === 'student' && entityName) {
+                    // Use all activities passed to this function (which includes subgroup activities)
+                    const studentActivities = activities;
+                    const subjectTeachers = {};
+                    studentActivities.forEach(activity => {
+                        if (!subjectTeachers[activity.subject]) {
+                            subjectTeachers[activity.subject] = [];
+                        }
+                        if (!subjectTeachers[activity.subject].includes(activity.teacher)) {
+                            subjectTeachers[activity.subject].push(activity.teacher);
+                        }
+                    });
+
+                    if (Object.keys(subjectTeachers).length > 0) {
+                        html += `<div class="subject-teachers">
+                            <h4>Teachers by Subject:</h4>
+                            <table class="teachers-table">`;
+
+                        const entries = Object.entries(subjectTeachers);
+
+                        // Process entries in pairs for 4-column layout
+                        for (let i = 0; i < entries.length; i += 2) {
+                            html += '<tr>';
+
+                            // First pair (Subject | Teacher)
+                            const [subject1, teachers1] = entries[i];
+                            html += `<td class="subject-cell"><strong>${subject1}</strong></td>`;
+                            html += `<td class="teacher-cell">${teachers1.join(', ')}</td>`;
+
+                            // Second pair (Subject | Teacher) if exists
+                            if (i + 1 < entries.length) {
+                                const [subject2, teachers2] = entries[i + 1];
+                                html += `<td class="subject-cell"><strong>${subject2}</strong></td>`;
+                                html += `<td class="teacher-cell">${teachers2.join(', ')}</td>`;
+                            } else {
+                                // Fill empty cells if odd number of entries
+                                html += `<td class="subject-cell"></td>`;
+                                html += `<td class="teacher-cell"></td>`;
+                            }
+
+                            html += '</tr>';
+                        }
+
+                        html += '</table></div>';
+                    }
+                }
+
+                return html;
+            }
+
+            isAfternoonHour(hourIndex) {
+                // Check if this hour index represents afternoon session
+                // For standard setup (8 hours = 4 morning + 4 afternoon), afternoon starts at hour index 4
+                const totalHours = this.data.hours.length;
+                const halfHours = Math.floor(totalHours / 2);
+                return hourIndex >= halfHours;
+            }
+
+            isMorningAfternoonBoundary(hourIndex) {
+                // Check if this is the first hour of afternoon session
+                // The boundary should be at the start of the second half of hours
+                const totalHours = this.data.hours.length;
+                const halfHours = Math.floor(totalHours / 2);
+                // Show boundary at the exact middle point (after 4th hour for 8-hour setup)
+                return hourIndex === halfHours;
+            }
+
+            getVirtualDaysForRealDay(realDayIndex) {
+                // If we have real days data, map virtual days to real days
+                if (this.data.realDays.length > 0) {
+                    const virtualDaysPerRealDay = Math.floor(this.data.days.length / this.data.realDays.length);
+                    const startIndex = realDayIndex * virtualDaysPerRealDay;
+                    const endIndex = startIndex + virtualDaysPerRealDay;
+
+                    // Return all virtual days for this real day
+                    return this.data.days.slice(startIndex, endIndex);
+                } else {
+                    // If no real days data, return the corresponding virtual day
+                    return realDayIndex < this.data.days.length ? [this.data.days[realDayIndex]] : [];
+                }
+            }
+
+            showLoading() {
+                // Only clear the timetable containers, not the entire tab content
+                document.querySelectorAll('.timetable-container').forEach(container => {
+                    container.innerHTML = '<div class="loading">Loading timetables...</div>';
+                });
+            }
+
+            showError(message) {
+                const errorDiv = `<div class="error">❌ ${message}</div>`;
+                document.querySelectorAll('.timetable-container').forEach(container => {
+                    container.innerHTML = errorDiv;
+                });
+            }
+
+            runDiagnostics() {
+                console.log('Running diagnostics...');
+                const diagnostics = [];
+
+                // Check if elements exist
+                const fileInput = document.getElementById('xmlFile');
+                const fileWrapper = document.querySelector('.file-input-wrapper');
+                const dropArea = document.getElementById('fileDropArea');
+                const statusDiv = document.getElementById('fileStatus');
+
+                diagnostics.push(`File input exists: ${!!fileInput}`);
+                diagnostics.push(`File input type: ${fileInput?.type}`);
+                diagnostics.push(`File input accept: ${fileInput?.accept}`);
+                diagnostics.push(`File wrapper exists: ${!!fileWrapper}`);
+                diagnostics.push(`Drop area exists: ${!!dropArea}`);
+                diagnostics.push(`Status div exists: ${!!statusDiv}`);
+
+                // Test file input programmatically
+                if (fileInput) {
+                    diagnostics.push(`Can trigger click: ${typeof fileInput.click === 'function'}`);
+                    diagnostics.push(`File input disabled: ${fileInput.disabled}`);
+                    diagnostics.push(`File input style display: ${getComputedStyle(fileInput).display}`);
+                    diagnostics.push(`File input style visibility: ${getComputedStyle(fileInput).visibility}`);
+
+                    // Test if we can trigger it
+                    try {
+                        const testClick = () => {
+                            console.log('Test click triggered successfully');
+                        };
+                        fileInput.addEventListener('click', testClick, { once: true });
+                        diagnostics.push('Click event listener test: OK');
+                    } catch (e) {
+                        diagnostics.push(`Click event listener test: FAILED - ${e.message}`);
+                    }
+                }
+
+                // Check data state
+                diagnostics.push(`Teachers loaded: ${this.data.teachers.size}`);
+                diagnostics.push(`Students loaded: ${this.data.students.size}`);
+                diagnostics.push(`Rooms loaded: ${this.data.rooms.size}`);
+                diagnostics.push(`Activities loaded: ${this.data.activities.length}`);
+
+                const message = 'Diagnostics:\n' + diagnostics.join('\n');
+                console.log(message);
+
+                this.updateFileStatus('🔧 Check console for diagnostics', 'info');
+
+                // Also test file input manually
+                if (fileInput) {
+                    console.log('Testing manual file input trigger...');
+                    try {
+                        fileInput.click();
+                        console.log('Manual file input click successful');
+                    } catch (e) {
+                        console.error('Manual file input click failed:', e);
+                    }
+                }
+
+                alert(message);
+            }
+
+            updateFileStatus(message, type = 'info') {
+                const statusDiv = document.getElementById('fileStatus');
+                if (!statusDiv) {
+                    console.error('Status div not found!');
+                    return;
+                }
+
+                statusDiv.style.display = 'block';
+                statusDiv.textContent = message;
+
+                // Remove previous classes
+                statusDiv.className = '';
+
+                // Add appropriate styling
+                switch (type) {
+                    case 'loading':
+                        statusDiv.style.backgroundColor = '#cce5ff';
+                        statusDiv.style.color = '#004085';
+                        statusDiv.style.borderLeft = '4px solid #007bff';
+                        break;
+                    case 'success':
+                        statusDiv.style.backgroundColor = '#d4edda';
+                        statusDiv.style.color = '#155724';
+                        statusDiv.style.borderLeft = '4px solid #28a745';
+                        break;
+                    case 'error':
+                        statusDiv.style.backgroundColor = '#f8d7da';
+                        statusDiv.style.color = '#721c24';
+                        statusDiv.style.borderLeft = '4px solid #dc3545';
+                        break;
+                    case 'warning':
+                        statusDiv.style.backgroundColor = '#fff3cd';
+                        statusDiv.style.color = '#856404';
+                        statusDiv.style.borderLeft = '4px solid #ffc107';
+                        break;
+                    default:
+                        statusDiv.style.backgroundColor = '#e2e3e5';
+                        statusDiv.style.color = '#383d41';
+                        statusDiv.style.borderLeft = '4px solid #6c757d';
+                }
+            }
+
+            toggleRTL(isRTL) {
+                this.settings.rtl = isRTL;
+                const body = document.body;
+                const label = document.getElementById('rtlLabel');
+
+                if (isRTL) {
+                    body.classList.add('rtl');
+                    body.classList.remove('ltr');
+                    label.textContent = 'RTL (Right to Left)';
+                } else {
+                    body.classList.add('ltr');
+                    body.classList.remove('rtl');
+                    label.textContent = 'LTR (Left to Right)';
+                }
+            }
+
+            refreshCurrentTimetable() {
+                // Refresh the current active tab's timetable
+                const activeTab = document.querySelector('.tab.active');
+                if (!activeTab) return;
+
+                const tabName = activeTab.dataset.tab;
+                if (tabName === 'teachers') {
+                    const teacherSelect = document.getElementById('teacherSelect');
+                    if (teacherSelect.value) {
+                        this.showTeacherTimetable(teacherSelect.value);
+                    }
+                } else if (tabName === 'students') {
+                    const studentSelect = document.getElementById('studentSelect');
+                    if (studentSelect.value) {
+                        this.showStudentTimetable(studentSelect.value);
+                    }
+                } else if (tabName === 'rooms') {
+                    const roomSelect = document.getElementById('roomSelect');
+                    if (roomSelect.value) {
+                        this.showRoomTimetable(roomSelect.value);
+                    }
+                }
+            }
+
+            updateActivityColors() {
+                const activities = document.querySelectorAll('.activity');
+                activities.forEach(activity => {
+                    activity.style.background = this.settings.activityColor;
+                });
+            }
+
+            adjustColor(color, amount) {
+                // Simple color adjustment function
+                const num = parseInt(color.replace('#', ''), 16);
+                const amt = Math.round(2.55 * amount);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+            }
+
+            resetSettings() {
+                this.settings = {
+                    rtl: false,
+                    language: 'en',
+                    dayNamesFormat: 'original',
+                    hourFormat: 'original',
+                    tableLayout: 'vertical',
+                    activityColor: '#28a745',
+                    morningStart: 8,
+                    afternoonStart: 14
+                };
+
+                // Update UI
+                document.getElementById('rtlToggle').checked = false;
+                document.getElementById('dayNamesFormat').value = 'original';
+                document.getElementById('hourFormat').value = 'original';
+                document.getElementById('tableLayout').value = 'vertical';
+                document.getElementById('activityColor').value = '#28a745';
+                document.getElementById('morningStart').value = 8;
+                document.getElementById('afternoonStart').value = 14;
+
+                this.toggleRTL(false);
+                this.refreshCurrentTimetable();
+            }
+
+            getDayNames() {
+                const baseDays = this.data.realDays.length > 0 ? this.data.realDays : this.data.days;
+
+                if (this.settings.dayNamesFormat === 'original') {
+                    return baseDays;
+                } else if (this.settings.dayNamesFormat === 'custom') {
+                    return baseDays.map(day => this.settings.customDayNames[day] || day);
+                } else if (this.translations.days[this.settings.dayNamesFormat]) {
+                    const translated = this.translations.days[this.settings.dayNamesFormat];
+                    return baseDays.slice(0, translated.length).map((_, index) => translated[index] || baseDays[index]);
+                }
+                return baseDays;
+            }
+
+            getHourNames() {
+                // Generate expanded hour list based on real days setup
+                const expandedHours = this.getExpandedHours();
+
+                if (this.settings.hourFormat === 'original') {
+                    return expandedHours;
+                } else if (this.settings.hourFormat === 'custom') {
+                    return expandedHours.map(hour => this.settings.customHourNames[hour] || hour);
+                } else if (this.settings.hourFormat === '24h') {
+                    // For 24h format, create realistic school hours
+                    return expandedHours.map((_, index) => {
+                        const slotIndex = index % this.data.hours.length;
+                        const session = Math.floor(index / this.data.hours.length);
+                        const baseHour = session === 0 ? (this.settings.morningStart || 8) + slotIndex : (this.settings.afternoonStart || 14) + slotIndex;
+                        return `${baseHour.toString().padStart(2, '0')}:00`;
+                    });
+                } else if (this.settings.hourFormat === '12h') {
+                    return expandedHours.map((_, index) => {
+                        const slotIndex = index % this.data.hours.length;
+                        const session = Math.floor(index / this.data.hours.length);
+                        const sessionHour = session === 0 ? (this.settings.morningStart || 8) + slotIndex : (this.settings.afternoonStart || 14) + slotIndex;
+
+                        if (sessionHour > 12) {
+                            return `${sessionHour - 12} PM`;
+                        } else {
+                            return `${sessionHour} AM`;
+                        }
+                    });
+                } else if (this.settings.hourFormat === 'period') {
+                    return expandedHours.map((_, index) => {
+                        const session = Math.floor(index / this.data.hours.length);
+                        const periodInSession = (index % this.data.hours.length) + 1;
+                        const sessionName = session === 0 ? 'Morning' : 'Afternoon';
+                        return `${sessionName} Period ${periodInSession}`;
+                    });
+                }
+                return expandedHours;
+            }
+
+            getExpandedHours() {
+                // If we have real days and virtual days, we need to show all time slots
+                if (this.data.realDays.length > 0 && this.data.days.length > this.data.realDays.length) {
+                    const virtualDaysPerRealDay = Math.floor(this.data.days.length / this.data.realDays.length);
+
+                    // Create expanded hour list: original hours * virtual days per real day
+                    const expandedHours = [];
+                    for (let vDay = 0; vDay < virtualDaysPerRealDay; vDay++) {
+                        for (let hour of this.data.hours) {
+                            if (virtualDaysPerRealDay > 1) {
+                                // Create descriptive labels for morning/afternoon sessions
+                                const sessionName = vDay === 0 ? 'Morning' : 'Afternoon';
+                                expandedHours.push(`${hour} (${sessionName})`);
+                            } else {
+                                expandedHours.push(hour);
+                            }
+                        }
+                    }
+                    return expandedHours;
+                }
+
+                // Fallback to original hours if no real day structure
+                return this.data.hours;
+            }
+
+            getActualHourAndDay(expandedHourIndex) {
+                // Calculate which actual hour and virtual day offset this expanded hour represents
+                if (this.data.realDays.length > 0 && this.data.days.length > this.data.realDays.length) {
+                    const virtualDayOffset = Math.floor(expandedHourIndex / this.data.hours.length);
+                    const hourIndex = expandedHourIndex % this.data.hours.length;
+                    return {
+                        actualHour: this.data.hours[hourIndex],
+                        virtualDayOffset: virtualDayOffset
+                    };
+                }
+
+                // Fallback for simple structure
+                return {
+                    actualHour: this.data.hours[expandedHourIndex] || this.data.hours[0],
+                    virtualDayOffset: 0
+                };
+            }
+
+            // Compute total occupied base-hour slots for a set of activities
+            // Avoids double-counting when multiple activities occur at the same day+hour
+            computeTotalHours(activities) {
+                if (!activities || activities.length === 0) return 0;
+                const occupied = new Set();
+                activities.forEach(activity => {
+                    const day = activity.day != null ? String(activity.day) : '';
+                    const startHour = activity.hour;
+                    const duration = parseInt(activity.duration || 1, 10) || 1;
+
+                    // Try to find the index of the start hour in known hours; fallback to string key
+                    const startIndex = this.data.hours ? this.data.hours.indexOf(startHour) : -1;
+
+                    for (let offset = 0; offset < duration; offset++) {
+                        let slotId;
+                        if (startIndex !== -1) {
+                            slotId = `${day}||${startIndex + offset}`;
+                        } else {
+                            // Use hour string plus offset to identify the slot when index isn't available
+                            slotId = `${day}||${String(startHour)}||${offset}`;
+                        }
+                        occupied.add(slotId);
+                    }
+                });
+                return occupied.size;
+            }
+
+            getOrdinalSuffix(num) {
+                const j = num % 10;
+                const k = num % 100;
+                if (j == 1 && k != 11) return 'st';
+                if (j == 2 && k != 12) return 'nd';
+                if (j == 3 && k != 13) return 'rd';
+                return 'th';
+            }
+
+            toggleRTL(isRTL) {
+                this.settings.rtl = isRTL;
+                const body = document.body;
+                const label = document.getElementById('rtlLabel');
+
+                if (isRTL) {
+                    body.classList.add('rtl');
+                    body.classList.remove('ltr');
+                    label.textContent = 'RTL (Right to Left)';
+                } else {
+                    body.classList.add('ltr');
+                    body.classList.remove('rtl');
+                    label.textContent = 'LTR (Left to Right)';
+                }
+            }
+
+            refreshCurrentTimetable() {
+                // Refresh the current active tab's timetable
+                const activeTab = document.querySelector('.tab.active');
+                if (!activeTab) return;
+
+                const tabName = activeTab.dataset.tab;
+                if (tabName === 'teachers') {
+                    const teacherSelect = document.getElementById('teacherSelect');
+                    if (teacherSelect.value) {
+                        this.showTeacherTimetable(teacherSelect.value);
+                    }
+                } else if (tabName === 'students') {
+                    const studentSelect = document.getElementById('studentSelect');
+                    if (studentSelect.value) {
+                        this.showStudentTimetable(studentSelect.value);
+                    }
+                } else if (tabName === 'rooms') {
+                    const roomSelect = document.getElementById('roomSelect');
+                    if (roomSelect.value) {
+                        this.showRoomTimetable(roomSelect.value);
+                    }
+                }
+            }
+
+            updateActivityColors() {
+                const activities = document.querySelectorAll('.activity');
+                activities.forEach(activity => {
+                    activity.style.background = this.settings.activityColor;
+                });
+            }
+
+            adjustColor(color, amount) {
+                // Simple color adjustment function
+                const num = parseInt(color.replace('#', ''), 16);
+                const amt = Math.round(2.55 * amount);
+                const R = (num >> 16) + amt;
+                const G = (num >> 8 & 0x00FF) + amt;
+                const B = (num & 0x0000FF) + amt;
+                return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+            }
+
+            resetSettings() {
+                this.settings = {
+                    rtl: false,
+                    language: 'en',
+                    dayNamesFormat: 'original',
+                    hourFormat: 'original',
+                    tableLayout: 'vertical',
+                    activityColor: '#28a745'
+                };
+
+                // Update UI
+                document.getElementById('rtlToggle').checked = false;
+                document.getElementById('dayNamesFormat').value = 'original';
+                document.getElementById('hourFormat').value = 'original';
+                document.getElementById('tableLayout').value = 'vertical';
+                document.getElementById('activityColor').value = '#28a745';
+
+                this.toggleRTL(false);
+                this.refreshCurrentTimetable();
+            }
+
+
+
+            loadSettings() {
+                try {
+                    const saved = localStorage.getItem('fetTimetableSettings');
+                    if (saved) {
+                        console.log('Loaded settings from localStorage:', saved);
+                        return JSON.parse(saved);
+                    }
+                } catch (e) {
+                    console.error('Error loading settings:', e);
+                }
+                return null;
+            }
+
+            saveSettings() {
+                try {
+                    localStorage.setItem('fetTimetableSettings', JSON.stringify(this.settings));
+                    console.log('Settings saved to localStorage:', this.settings);
+                } catch (e) {
+                    console.error('Error saving settings:', e);
+                }
+            }
+
+            applySettingsToUI() {
+                // Wait for DOM to be ready
+                setTimeout(() => {
+                    try {
+                        document.getElementById('rtlToggle').checked = this.settings.rtl;
+                        document.getElementById('dayNamesFormat').value = this.settings.dayNamesFormat;
+                        document.getElementById('hourFormat').value = this.settings.hourFormat;
+                        document.getElementById('tableLayout').value = this.settings.tableLayout;
+                        document.getElementById('activityColor').value = this.settings.activityColor;
+                        if (typeof this.settings.morningStart !== 'undefined') {
+                            document.getElementById('morningStart').value = this.settings.morningStart;
+                        }
+                        if (typeof this.settings.afternoonStart !== 'undefined') {
+                            document.getElementById('afternoonStart').value = this.settings.afternoonStart;
+                        }
+
+                        this.toggleRTL(this.settings.rtl);
+                        this.createCustomInputs();
+                    } catch (e) {
+                        console.error('Error applying settings to UI:', e);
+                    }
+                }, 100);
+            }
+
+            createCustomInputs() {
+                this.createDayNameInputs();
+                this.createHourNameInputs();
+            }
+
+            createDayNameInputs() {
+                const container = document.getElementById('dayNamesInputs');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                const days = this.data.realDays.length > 0 ? this.data.realDays : this.data.days;
+
+                days.forEach((day, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'custom-name-input';
+
+                    const currentValue = this.settings.customDayNames[day] || day;
+
+                    div.innerHTML = `
+                        <label>Original: ${day}</label>
+                        <input type="text" 
+                               value="${currentValue}" 
+                               placeholder="${day}"
+                               data-original="${day}"
+                               onchange="timetableViewer.updateCustomName('days', '${day}', this.value)"
+                               oninput="timetableViewer.updateCustomName('days', '${day}', this.value)">
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            createHourNameInputs() {
+                const container = document.getElementById('hourNamesInputs');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                // Use expanded hours to show all time slots (morning and afternoon)
+                const expandedHours = this.getExpandedHours();
+
+                expandedHours.forEach((hour, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'custom-name-input';
+
+                    const currentValue = this.settings.customHourNames[hour] || hour;
+
+                    div.innerHTML = `
+                        <label>Original: ${hour}</label>
+                        <input type="text" 
+                               value="${currentValue}" 
+                               placeholder="${hour}"
+                               data-original="${hour}"
+                               onchange="timetableViewer.updateCustomName('hours', '${hour}', this.value)"
+                               oninput="timetableViewer.updateCustomName('hours', '${hour}', this.value)">
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            updateCustomName(type, originalName, newName) {
+                if (type === 'days') {
+                    this.settings.customDayNames[originalName] = newName;
+                } else {
+                    this.settings.customHourNames[originalName] = newName;
+                }
+                this.saveSettings();
+
+                // Only refresh if we're in custom mode
+                if ((type === 'days' && this.settings.dayNamesFormat === 'custom') ||
+                    (type === 'hours' && this.settings.hourFormat === 'custom')) {
+                    this.refreshCurrentTimetable();
+                }
+            }
+
+            showInfo(message) {
+                const infoDiv = `<div class="info-panel">✅ ${message}</div>`;
+                document.querySelector('.content-wrapper').insertAdjacentHTML('afterbegin', infoDiv);
+
+                // Remove info after 5 seconds
+                setTimeout(() => {
+                    const info = document.querySelector('.info-panel');
+                    if (info) info.remove();
+                }, 5000);
+            }
+        }
+
+        // Global error handler
+        window.addEventListener('error', function (e) {
+            console.error('Global JavaScript error:', e.error);
+            console.error('Error message:', e.message);
+            console.error('Error filename:', e.filename);
+            console.error('Error line:', e.lineno);
+
+            const statusDiv = document.getElementById('fileStatus');
+            if (statusDiv) {
+                statusDiv.style.display = 'block';
+                statusDiv.innerHTML = `❌ JavaScript Error: ${e.message} (Line: ${e.lineno})`;
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.borderLeft = '4px solid #dc3545';
+            }
+        });
+
+        // Initialize the timetable viewer when DOM is ready
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM loaded, initializing TimetableViewer...');
+            try {
+                const viewer = new TimetableViewer();
+                window.timetableViewer = viewer; // Global reference for custom inputs
+                console.log('TimetableViewer initialized successfully');
+
+                // Make it globally accessible for debugging
+                window.timetableViewer = viewer;
+
+                // Add test functions to window for manual testing
+                window.testFileUpload = function () {
+                    console.log('Manual test function called');
+                    const fileInput = document.getElementById('xmlFile');
+                    if (fileInput && fileInput.files.length > 0) {
+                        console.log('Files found in input, processing...');
+                        viewer.handleFileUpload(fileInput.files);
+                    } else {
+                        console.log('No files in input');
+                        alert('Please select files first, then call testFileUpload()');
+                    }
+                };
+
+                window.populateDropdowns = function () {
+                    console.log('Manual populate dropdowns called');
+                    try {
+                        viewer.populateDropdowns();
+                        alert('Dropdowns populated successfully');
+                    } catch (e) {
+                        console.error('Error populating dropdowns:', e);
+                        alert('Error populating dropdowns: ' + e.message);
+                    }
+                };
+
+                window.checkData = function () {
+                    console.log('Current data state:');
+                    console.log('Teachers:', viewer.data.teachers.size);
+                    console.log('Students:', viewer.data.students.size);
+                    console.log('Rooms:', viewer.data.rooms.size);
+                    console.log('Activities:', viewer.data.activities.length);
+                    alert(`Data loaded - Teachers: ${viewer.data.teachers.size}, Students: ${viewer.data.students.size}, Rooms: ${viewer.data.rooms.size}, Activities: ${viewer.data.activities.length}`);
+                };
+
+            } catch (error) {
+                console.error('Error initializing TimetableViewer:', error);
+                document.getElementById('fileStatus').style.display = 'block';
+                document.getElementById('fileStatus').innerHTML = '❌ Error initializing application: ' + error.message;
+                document.getElementById('fileStatus').style.backgroundColor = '#f8d7da';
+                document.getElementById('fileStatus').style.color = '#721c24';
+            }
+        });
+    </script>
+</body>
+
+</html>
