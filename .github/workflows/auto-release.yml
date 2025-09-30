@@ -1,0 +1,82 @@
+name: Auto Release on push
+
+on:
+  push:
+    branches: [ 'master' ]
+
+permissions:
+  contents: write
+
+jobs:
+  bump-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Read or create VERSION
+        id: version
+        run: |
+          if [ -f VERSION ]; then
+            ver=$(cat VERSION)
+          else
+            ver="0.0.0"
+            echo "$ver" > VERSION
+            git add VERSION
+            git commit -m "chore: add VERSION file (auto)" || true
+            git push origin HEAD:master || true
+          fi
+          echo "current_version=$ver" >> $GITHUB_OUTPUT
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          ver=${{ steps.version.outputs.current_version }}
+          IFS='.' read -r major minor patch <<< "$ver"
+          patch=$((patch + 1))
+          newver="$major.$minor.$patch"
+          echo "$newver" > VERSION
+          git add VERSION
+          git commit -m "chore(release): bump version to $newver [skip ci]" || echo "no changes"
+          git tag -a "v$newver" -m "Release v$newver"
+          git push origin HEAD:master --follow-tags
+          echo "new_version=$newver" >> $GITHUB_OUTPUT
+
+      - id: create_release
+        name: Create GitHub Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ steps.bump.outputs.new_version }}
+          release_name: v${{ steps.bump.outputs.new_version }}
+          body: "Automated release for commit ${{ github.sha }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload timetable_viewer.html to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./timetable_viewer.html
+          asset_name: timetable_viewer.html
+          asset_content_type: text/html
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare publish dir
+        run: |
+          mkdir -p public
+          cp timetable_viewer.html public/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
