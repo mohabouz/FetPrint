@@ -1011,6 +1011,9 @@
                 // Apply loaded settings to UI after DOM is ready
                 this.applySettingsToUI();
 
+                // Collator for natural (numeric-aware) sorting of names like "Salle 1", "Salle 10"
+                this.collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
                 // Day name translations
                 this.translations = {
                     days: {
@@ -1770,7 +1773,7 @@
 
                 console.log(`Populating ${this.data.teachers.size} teachers`);
                 teacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
-                Array.from(this.data.teachers.keys()).sort().forEach(teacher => {
+                Array.from(this.data.teachers.keys()).sort(this.collator.compare).forEach(teacher => {
                     const option = document.createElement('option');
                     option.value = teacher;
                     option.textContent = teacher;
@@ -1789,7 +1792,7 @@
 
                 console.log(`Populating ${allStudentGroups.size} student groups (including subgroups)`);
                 studentSelect.innerHTML = '<option value="">Choose a student group...</option>';
-                Array.from(allStudentGroups).sort().forEach(student => {
+                Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
                     const option = document.createElement('option');
                     option.value = student;
                     option.textContent = student;
@@ -1805,7 +1808,7 @@
 
                 console.log(`Populating ${this.data.rooms.size} rooms`);
                 roomSelect.innerHTML = '<option value="">Choose a room...</option>';
-                Array.from(this.data.rooms.keys()).sort().forEach(room => {
+                Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
                     const option = document.createElement('option');
                     option.value = room;
                     option.textContent = room;
@@ -1826,7 +1829,7 @@
                 const printTeacherSelect = document.getElementById('printTeacherSelect');
                 if (printTeacherSelect) {
                     printTeacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
-                    Array.from(this.data.teachers.keys()).sort().forEach(teacher => {
+                    Array.from(this.data.teachers.keys()).sort(this.collator.compare).forEach(teacher => {
                         const option = document.createElement('option');
                         option.value = teacher;
                         option.textContent = teacher;
@@ -1839,7 +1842,7 @@
                 if (printStudentSelect) {
                     const allStudentGroups = this.getAllStudentGroups();
                     printStudentSelect.innerHTML = '<option value="">Choose a student group...</option>';
-                    Array.from(allStudentGroups).sort().forEach(student => {
+                    Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
                         const option = document.createElement('option');
                         option.value = student;
                         option.textContent = student;
@@ -1851,7 +1854,7 @@
                 const printRoomSelect = document.getElementById('printRoomSelect');
                 if (printRoomSelect) {
                     printRoomSelect.innerHTML = '<option value="">Choose a room...</option>';
-                    Array.from(this.data.rooms.keys()).sort().forEach(room => {
+                    Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
                         const option = document.createElement('option');
                         option.value = room;
                         option.textContent = room;
@@ -1868,7 +1871,7 @@
                 const teacherList = document.getElementById('teacherCheckboxList');
                 if (teacherList) {
                     teacherList.innerHTML = '';
-                    Array.from(this.data.teachers.keys()).sort().forEach(teacher => {
+                    Array.from(this.data.teachers.keys()).sort(this.collator.compare).forEach(teacher => {
                         const label = document.createElement('label');
                         label.innerHTML = `<input type="checkbox" value="${teacher}"> ${teacher}`;
                         teacherList.appendChild(label);
@@ -1880,7 +1883,7 @@
                 if (studentList) {
                     const allStudentGroups = this.getAllStudentGroups();
                     studentList.innerHTML = '';
-                    Array.from(allStudentGroups).sort().forEach(student => {
+                    Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
                         const label = document.createElement('label');
                         label.innerHTML = `<input type="checkbox" value="${student}"> ${student}`;
                         studentList.appendChild(label);
@@ -1891,7 +1894,7 @@
                 const roomList = document.getElementById('roomCheckboxList');
                 if (roomList) {
                     roomList.innerHTML = '';
-                    Array.from(this.data.rooms.keys()).sort().forEach(room => {
+                    Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
                         const label = document.createElement('label');
                         label.innerHTML = `<input type="checkbox" value="${room}"> ${room}`;
                         roomList.appendChild(label);
