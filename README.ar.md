@@ -4,11 +4,8 @@
 
 البدء السريع
 - افتح المجلد ثم انقر مزدوجاً على `timetable_viewer.html` لفتحه في المتصفح.
-- أو شغّل خادماً بسيطاً ثم افتح:
-  ```
-  python -m http.server 8000
-  http://localhost:8000/timetable_viewer.html
-  ```
+- يمكنك فتح الملف مباشرة عبر المسار: `file:///path/to/timetable_viewer.html` عن طريق النقر المزدوج أو سحب الملف إلى نافذة المتصفح.
+- أو عرض النسخة المستضافة على GitHub Pages: https://mohabouz.github.io/FetPrint/timetable_viewer.html
 - استخدم زر "Select FET XML Files" لاستيراد ملفات `.fet` / `.xml`.
 - انتقل بين التبويبات (Teachers / Students / Rooms) واختر الكيان لعرض جدول الحصص.
 - استخدم إعدادات العرض وواجهة الطباعة لحفظ أو طباعة التقارير.

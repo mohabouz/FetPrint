@@ -8,13 +8,8 @@ A single-file HTML timetabling viewer for FET XML/.fet exports. Open `timetable_
 Quick start
 -----------
 1. Open the workspace folder and double-click `timetable_viewer.html` to open it in your browser.
-   - You can open the file directly (file:///) or serve the folder and browse to it:
-
-```bash
-# Optional: serve the folder (recommended if you see CORS or local resource issues)
-python -m http.server 8000
-# Then open http://localhost:8000/timetable_viewer.html
-```
+  - You can open the file directly (file:///path/to/timetable_viewer.html) by double-clicking it or dragging it into your browser.
+  - Or view the hosted version on GitHub Pages: https://mohabouz.github.io/FetPrint/timetable_viewer.html
 
 2. Use the "Select FET XML Files" control to import one or more `.fet` / `.xml` files exported by FET.
 3. Switch between the Teachers / Students / Rooms tabs and use the dropdowns to select an entity.
