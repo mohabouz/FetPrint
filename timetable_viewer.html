@@ -716,8 +716,24 @@
                 font-size: 11px;
             }
 
+            /* Force all printed text to black and remove colored backgrounds (override inline styles)
+               This ensures legible, printer-friendly output where text remains black regardless of
+               on-screen coloring. */
+            *, *::before, *::after {
+                color: #000 !important;
+                background: transparent !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Activity blocks should print with transparent/white backgrounds and black text */
+            .activity, .activity * {
+                background: transparent !important;
+                color: #000 !important;
+            }
+
             .teachers-table .subject-cell {
-                background-color: #f0f0f0 !important;
+                background-color: transparent !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -2035,6 +2051,17 @@
                             @media print {
                                 .teacher-section { page-break-after: always; page-break-inside: avoid; }
                                 body { margin: 0; }
+                                /* Force black text and neutral backgrounds in printed output */
+                                *, *::before, *::after {
+                                    color: #000 !important;
+                                    background: transparent !important;
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
+                                }
+                                .activity, .activity * {
+                                    background: transparent !important;
+                                    color: #000 !important;
+                                }
                             }
                         </style>
                     </head>
