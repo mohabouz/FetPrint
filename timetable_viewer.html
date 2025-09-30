@@ -2512,7 +2512,7 @@
                                     const textColor = this.getContrastTextColor(backgroundColor);
                                     cellContent += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
                                     if (type === 'teacher') {
-                                        cellContent += `<div class="subject">${activity.subject}</div>`;
+                                        // Subject is shown in the teacher header; omit from activity block
                                         cellContent += `<div class="class-group">${activity.students}</div>`;
                                         if (activity.room && activity.room !== '') {
                                             cellContent += `<div class="room">${activity.room}</div>`;
@@ -2583,6 +2583,7 @@
                                 const textColor = this.getContrastTextColor(backgroundColor);
                                 html += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
                                 if (type === 'teacher') {
+                                    // Subject shown in header; omit subject inside activity block for teachers
                                     html += `<div class="class-group">${activity.students}</div>`;
                                 } else if (type === 'student') {
                                     html += `<div class="subject">${activity.subject}</div>`;
