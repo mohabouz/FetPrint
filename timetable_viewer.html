@@ -245,7 +245,8 @@
         }
 
         .activity {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: #28a745;
+            /* solid color instead of gradient */
             color: white;
             padding: 8px;
             margin: 0px;
@@ -265,7 +266,8 @@
 
         /* Spanned activities (colspan > 1) get special styling */
         td[colspan] .activity {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            background: #007bff;
+            /* solid color for spanned activities */
             border: none;
             font-weight: 600;
             text-align: center;
@@ -505,11 +507,13 @@
         .subgroup {
             font-size: 10px;
             font-weight: bold;
-            color: #ffc107;
+            color: #ffffff;
+            /* white for good contrast */
             text-align: center;
             margin-top: 2px;
-            padding: 1px 3px;
-            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.25);
+            /* translucent dark background for readability against colored activities */
             border-radius: 3px;
         }
 
@@ -2135,22 +2139,34 @@
                     activities.push(...student.activities);
                 }
 
-                // Get activities from all subgroups
-                // Look for activities where the student field starts with the group name + "-"
+                // Get activities from all subgroups and from activities that list multiple groups
+                // Split activity.students on common separators (comma, semicolon, slash) and trim
                 this.data.activities.forEach(activity => {
-                    if (activity.students) {
-                        // Check if this activity is for a subgroup of the current group
-                        if (activity.students.startsWith(studentName + '-')) {
+                    if (!activity.students) return;
+
+                    const studentParts = activity.students.split(/[,;\/]+/).map(s => s.trim()).filter(Boolean);
+
+                    // If any listed student equals the selected student, include the activity
+                    if (studentParts.includes(studentName)) {
+                        activities.push(activity);
+                        return;
+                    }
+
+                    // If any listed student is a subgroup of the selected student (e.g. "Group-Sub")
+                    // or listed student starts with selectedName + '-', include it
+                    for (const part of studentParts) {
+                        if (part.startsWith(studentName + '-')) {
                             activities.push(activity);
+                            break;
                         }
-                        // Also check if the current selection is itself a subgroup
-                        // and include activities for the parent group
-                        const parts = studentName.split('-');
-                        if (parts.length > 1) {
-                            const parentGroup = parts.slice(0, -1).join('-');
-                            if (activity.students === parentGroup) {
-                                activities.push(activity);
-                            }
+                    }
+
+                    // Also check if the current selection is itself a subgroup and include activities for the parent group
+                    const parts = studentName.split('-');
+                    if (parts.length > 1) {
+                        const parentGroup = parts.slice(0, -1).join('-');
+                        if (studentParts.includes(parentGroup)) {
+                            activities.push(activity);
                         }
                     }
                 });
@@ -2299,13 +2315,18 @@
                                 const primaryActivity = slotActivities[0];
                                 const backgroundColor = this.getActivityBackgroundColor(primaryActivity, type);
                                 const textColor = this.getContrastTextColor(backgroundColor);
-                                cellContent += `<div class="activity" style="background: linear-gradient(135deg, ${backgroundColor} 0%, ${this.adjustColor(backgroundColor, -20)} 100%); color: ${textColor};">`;
+                                cellContent += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
+                                const isSubSelection = entityName && entityName.includes('-');
+                                const parentOfSelection = isSubSelection ? entityName.split('-').slice(0, -1).join('-') : null;
                                 slotActivities.forEach((activity, index) => {
                                     if (index > 0) cellContent += '<hr class="activity-separator">';
                                     cellContent += `<div class="subject">${activity.subject}</div>`;
                                     // Show subgroup name if different from selected group
                                     if (activity.students && activity.students !== entityName) {
-                                        cellContent += `<div class="subgroup">${activity.students}</div>`;
+                                        // But don't show the parent group label when we're viewing a subgroup
+                                        if (!(isSubSelection && activity.students === parentOfSelection)) {
+                                            cellContent += `<div class="subgroup">${activity.students}</div>`;
+                                        }
                                     }
                                     cellContent += `<div class="room">${activity.room || ''}</div>`;
                                 });
@@ -2334,7 +2355,7 @@
 
                                     const backgroundColor = this.getActivityBackgroundColor(activity, type);
                                     const textColor = this.getContrastTextColor(backgroundColor);
-                                    cellContent += `<div class="activity" style="background: linear-gradient(135deg, ${backgroundColor} 0%, ${this.adjustColor(backgroundColor, -20)} 100%); color: ${textColor};">`;
+                                    cellContent += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
                                     if (type === 'teacher') {
                                         cellContent += `<div class="subject">${activity.subject}</div>`;
                                         cellContent += `<div class="class-group">${activity.students}</div>`;
@@ -2345,7 +2366,12 @@
                                         cellContent += `<div class="subject">${activity.subject}</div>`;
                                         // Show subgroup name if different from selected group
                                         if (activity.students && activity.students !== entityName) {
-                                            cellContent += `<div class="subgroup">${activity.students}</div>`;
+                                            // Don't show parent group label when viewing a subgroup
+                                            const isSubSelectionSingle = entityName && entityName.includes('-');
+                                            const parentOfSelectionSingle = isSubSelectionSingle ? entityName.split('-').slice(0, -1).join('-') : null;
+                                            if (!(isSubSelectionSingle && activity.students === parentOfSelectionSingle)) {
+                                                cellContent += `<div class="subgroup">${activity.students}</div>`;
+                                            }
                                         }
                                         cellContent += `<div class="room">${activity.room || ''}</div>`;
                                     } else if (type === 'room') {
@@ -2400,7 +2426,7 @@
                                 // Create activity with duration indicator
                                 const backgroundColor = this.getActivityBackgroundColor(activity, type);
                                 const textColor = this.getContrastTextColor(backgroundColor);
-                                html += `<div class="activity" style="background: linear-gradient(135deg, ${backgroundColor} 0%, ${this.adjustColor(backgroundColor, -20)} 100%); color: ${textColor};">`;
+                                html += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
                                 if (type === 'teacher') {
                                     html += `<div class="class-group">${activity.students}</div>`;
                                 } else if (type === 'student') {
@@ -2679,7 +2705,7 @@
             updateActivityColors() {
                 const activities = document.querySelectorAll('.activity');
                 activities.forEach(activity => {
-                    activity.style.background = `linear-gradient(135deg, ${this.settings.activityColor} 0%, ${this.adjustColor(this.settings.activityColor, -20)} 100%)`;
+                    activity.style.background = this.settings.activityColor;
                 });
             }
 
@@ -2864,7 +2890,7 @@
             updateActivityColors() {
                 const activities = document.querySelectorAll('.activity');
                 activities.forEach(activity => {
-                    activity.style.background = `linear-gradient(135deg, ${this.settings.activityColor} 0%, ${this.adjustColor(this.settings.activityColor, -20)} 100%)`;
+                    activity.style.background = this.settings.activityColor;
                 });
             }
 
