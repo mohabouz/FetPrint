@@ -728,6 +728,9 @@
                 print-color-adjust: exact;
             }
 
+            /* Ensure H1 ends the first printed page */
+            h1 { page-break-after: always; }
+
             /* Activity blocks should print with transparent/white backgrounds and black text */
             .activity,
             .activity * {
@@ -2053,6 +2056,7 @@
                             
                             @media print {
                                 .teacher-section { page-break-after: always; page-break-inside: avoid; }
+                                h1 { page-break-after: always; }
                                 body { margin: 0; }
                                 /* Force black text and neutral backgrounds in printed output */
                                 *, *::before, *::after {
@@ -2091,6 +2095,41 @@
                         html += '</div>';
                     });
 
+                    // Ensure teacher timetables are grouped first; start next content on a new page
+                    html += '<div style="page-break-before: always;"></div>';
+
+                    // Teachers table: subjects -> teachers (printed on its own page)
+                    html += '<h2>Teachers Table</h2>';
+                    html += '<div class="teacher-section">';
+                    // Build subject -> teachers map
+                    const subjMap = {};
+                    this.data.activities.forEach(a => {
+                        if (!a.subject) return;
+                        if (!subjMap[a.subject]) subjMap[a.subject] = new Set();
+                        if (a.teacher) subjMap[a.subject].add(a.teacher);
+                    });
+                    const subjEntries = Object.entries(subjMap).map(([s, set]) => [s, Array.from(set)]);
+                    if (subjEntries.length > 0) {
+                        html += '<table class="teachers-table">';
+                        for (let i = 0; i < subjEntries.length; i += 2) {
+                            html += '<tr>';
+                            const [sub1, t1] = subjEntries[i];
+                            html += `<td class="subject-cell"><strong>${sub1}</strong></td>`;
+                            html += `<td class="teacher-cell">${t1.join(', ')}</td>`;
+                            if (i + 1 < subjEntries.length) {
+                                const [sub2, t2] = subjEntries[i + 1];
+                                html += `<td class="subject-cell"><strong>${sub2}</strong></td>`;
+                                html += `<td class="teacher-cell">${t2.join(', ')}</td>`;
+                            } else {
+                                html += `<td class="subject-cell"></td><td class="teacher-cell"></td>`;
+                            }
+                            html += '</tr>';
+                        }
+                        html += '</table>';
+                    }
+                    html += '</div>';
+
+                    // Now start Students section
                     html += '<h2>Students</h2>';
                     entities.students.forEach(student => {
                         html += '<div class="teacher-section">';
