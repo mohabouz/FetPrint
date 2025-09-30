@@ -1,6 +1,8 @@
 FET Timetable Viewer
 ====================
 
+A small language selector is available: [English](README.md) · [العربية](README.ar.md)
+
 A single-file HTML timetabling viewer for FET XML/.fet exports. Open `timetable_viewer.html` in a browser to view, explore and print timetables for Teachers, Students (groups & subgroups) and Rooms.
 
 Quick start
