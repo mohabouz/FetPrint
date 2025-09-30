@@ -842,6 +842,20 @@
                             <option value="custom">Custom</option>
                         </select>
                     </div>
+                    <div class="setting-item">
+                        <label>Morning Start:</label>
+                        <input type="number" id="morningStart" min="0" max="23" value="8"
+                            style="width:80px; padding:6px;" />
+                        <small style="color:#666; font-size:11px; margin-left:10px;">Start hour for the morning
+                            session</small>
+                    </div>
+                    <div class="setting-item">
+                        <label>Afternoon Start:</label>
+                        <input type="number" id="afternoonStart" min="0" max="23" value="14"
+                            style="width:80px; padding:6px;" />
+                        <small style="color:#666; font-size:11px; margin-left:10px;">Start hour for the afternoon
+                            session</small>
+                    </div>
                     <div class="settings-section">
                         <h3>📝 Custom Day Names</h3>
                         <div id="dayNamesInputs" class="custom-inputs-grid"></div>
@@ -1003,6 +1017,8 @@
                     hourFormat: 'original',
                     tableLayout: 'vertical',
                     activityColor: '#28a745',
+                    morningStart: 8,
+                    afternoonStart: 14,
                     customDayNames: {},
                     customHourNames: {},
                     ...savedSettings
@@ -1308,6 +1324,31 @@
                     this.saveSettings();
                     this.refreshCurrentTimetable();
                 });
+
+                // Morning/Afternoon start hour listeners
+                const morningEl = document.getElementById('morningStart');
+                if (morningEl) {
+                    morningEl.addEventListener('change', (e) => {
+                        let v = parseInt(e.target.value, 10);
+                        if (isNaN(v) || v < 0) v = 0;
+                        if (v > 23) v = 23;
+                        this.settings.morningStart = v;
+                        this.saveSettings();
+                        this.refreshCurrentTimetable();
+                    });
+                }
+
+                const afternoonEl = document.getElementById('afternoonStart');
+                if (afternoonEl) {
+                    afternoonEl.addEventListener('change', (e) => {
+                        let v = parseInt(e.target.value, 10);
+                        if (isNaN(v) || v < 0) v = 0;
+                        if (v > 23) v = 23;
+                        this.settings.afternoonStart = v;
+                        this.saveSettings();
+                        this.refreshCurrentTimetable();
+                    });
+                }
 
                 document.getElementById('tableLayout').addEventListener('change', (e) => {
                     this.settings.tableLayout = e.target.value;
@@ -1773,7 +1814,7 @@
 
                 console.log(`Populating ${this.data.teachers.size} teachers`);
                 teacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
-                Array.from(this.data.teachers.keys()).sort(this.collator.compare).forEach(teacher => {
+                Array.from(this.data.teachers.keys()).sort(this.teacherSubjectNameComparator.bind(this)).forEach(teacher => {
                     const option = document.createElement('option');
                     option.value = teacher;
                     option.textContent = teacher;
@@ -1829,7 +1870,7 @@
                 const printTeacherSelect = document.getElementById('printTeacherSelect');
                 if (printTeacherSelect) {
                     printTeacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
-                    Array.from(this.data.teachers.keys()).sort(this.collator.compare).forEach(teacher => {
+                    Array.from(this.data.teachers.keys()).sort(this.teacherSubjectNameComparator.bind(this)).forEach(teacher => {
                         const option = document.createElement('option');
                         option.value = teacher;
                         option.textContent = teacher;
@@ -1871,7 +1912,7 @@
                 const teacherList = document.getElementById('teacherCheckboxList');
                 if (teacherList) {
                     teacherList.innerHTML = '';
-                    Array.from(this.data.teachers.keys()).sort(this.collator.compare).forEach(teacher => {
+                    Array.from(this.data.teachers.keys()).sort(this.teacherSubjectNameComparator.bind(this)).forEach(teacher => {
                         const label = document.createElement('label');
                         label.innerHTML = `<input type="checkbox" value="${teacher}"> ${teacher}`;
                         teacherList.appendChild(label);
@@ -2217,6 +2258,26 @@
 
                 const timetable = this.generateTimetable(roomActivities, 'room', roomName);
                 document.getElementById('roomTimetable').innerHTML = timetable;
+            }
+
+            // Return a canonical subject key for a teacher (first subject or joined subjects)
+            getTeacherPrimarySubject(teacherName) {
+                const teacher = this.data.teachers.get(teacherName);
+                if (!teacher || !teacher.activities) return '';
+                const subjects = [...new Set(teacher.activities.map(a => (a.subject || '').trim()).filter(Boolean))];
+                // Prefer the first subject if available, otherwise join
+                return subjects.length === 0 ? '' : subjects.join(', ');
+            }
+
+            // Comparator that sorts by teacher's primary subject then by teacher name
+            teacherSubjectNameComparator(a, b) {
+                const subA = this.getTeacherPrimarySubject(a).toLowerCase();
+                const subB = this.getTeacherPrimarySubject(b).toLowerCase();
+                if (subA !== subB) {
+                    return subA < subB ? -1 : 1;
+                }
+                // Fall back to numeric-aware collator for names
+                return this.collator.compare(a, b);
             }
 
             generateTimetable(activities, type, entityName = '') {
@@ -2731,7 +2792,9 @@
                     dayNamesFormat: 'original',
                     hourFormat: 'original',
                     tableLayout: 'vertical',
-                    activityColor: '#28a745'
+                    activityColor: '#28a745',
+                    morningStart: 8,
+                    afternoonStart: 14
                 };
 
                 // Update UI
@@ -2740,6 +2803,8 @@
                 document.getElementById('hourFormat').value = 'original';
                 document.getElementById('tableLayout').value = 'vertical';
                 document.getElementById('activityColor').value = '#28a745';
+                document.getElementById('morningStart').value = 8;
+                document.getElementById('afternoonStart').value = 14;
 
                 this.toggleRTL(false);
                 this.refreshCurrentTimetable();
@@ -2770,16 +2835,16 @@
                 } else if (this.settings.hourFormat === '24h') {
                     // For 24h format, create realistic school hours
                     return expandedHours.map((_, index) => {
-                        const baseHour = 8 + (index % this.data.hours.length);
+                        const slotIndex = index % this.data.hours.length;
                         const session = Math.floor(index / this.data.hours.length);
-                        const sessionHour = session === 0 ? baseHour : baseHour + 6; // Morning: 8-11, Afternoon: 14-17
-                        return `${sessionHour.toString().padStart(2, '0')}:00`;
+                        const baseHour = session === 0 ? (this.settings.morningStart || 8) + slotIndex : (this.settings.afternoonStart || 14) + slotIndex;
+                        return `${baseHour.toString().padStart(2, '0')}:00`;
                     });
                 } else if (this.settings.hourFormat === '12h') {
                     return expandedHours.map((_, index) => {
-                        const baseHour = 8 + (index % this.data.hours.length);
+                        const slotIndex = index % this.data.hours.length;
                         const session = Math.floor(index / this.data.hours.length);
-                        const sessionHour = session === 0 ? baseHour : baseHour + 6; // Morning: 8-11, Afternoon: 2-5 PM
+                        const sessionHour = session === 0 ? (this.settings.morningStart || 8) + slotIndex : (this.settings.afternoonStart || 14) + slotIndex;
 
                         if (sessionHour > 12) {
                             return `${sessionHour - 12} PM`;
@@ -2963,6 +3028,12 @@
                         document.getElementById('hourFormat').value = this.settings.hourFormat;
                         document.getElementById('tableLayout').value = this.settings.tableLayout;
                         document.getElementById('activityColor').value = this.settings.activityColor;
+                        if (typeof this.settings.morningStart !== 'undefined') {
+                            document.getElementById('morningStart').value = this.settings.morningStart;
+                        }
+                        if (typeof this.settings.afternoonStart !== 'undefined') {
+                            document.getElementById('afternoonStart').value = this.settings.afternoonStart;
+                        }
 
                         this.toggleRTL(this.settings.rtl);
                         this.createCustomInputs();
