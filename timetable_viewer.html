@@ -489,7 +489,7 @@
 
         .activity-separator {
             border: none;
-            border-top: 2px dashed #6c757d;
+            border-top: 1px dashed #fff;
             margin: 5px 0;
         }
 
@@ -704,7 +704,8 @@
 
             .timetable {
                 width: 100% !important;
-                font-size: 12px;
+                font-size: 9px;
+                box-shadow: none;
             }
 
             .teachers-table {
@@ -713,7 +714,11 @@
 
             .teachers-table td {
                 border: 1px solid #000 !important;
-                font-size: 11px;
+                font-size: 9px;
+            }
+
+            .tab-content {
+                box-shadow: none;
             }
 
             /* Force all printed text to black and remove colored backgrounds (override inline styles)
@@ -722,8 +727,8 @@
             *,
             *::before,
             *::after {
-                color: #000 !important;
-                background: transparent !important;
+                /* color: #000 !important;
+                background: transparent !important; */
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -734,16 +739,50 @@
             }
 
             /* Activity blocks should print with transparent/white backgrounds and black text */
-            .activity,
+            /* .activity,
             .activity * {
-                /* background: transparent !important; */
+                background: transparent !important;
                 color: #000 !important;
+            } */
+            .activity {
+                font-size: 8px;
+                box-shadow: none;
+                min-height: 0;
+                padding: 12px 4px;
+            }
+
+            .activity>.room {
+                font-size: 6px;
+            }
+
+            .classes-list {
+                font-size: 12px;
+                color: #000;
             }
 
             .teachers-table .subject-cell {
                 background-color: transparent !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            .subgroup {
+                font-size: 5px;
+                margin: 1px 0;
+                padding: 1px;
+            }
+
+
+            div.activity:has(.subgroup) {
+                padding: 2px 4px;
+            }
+
+            .activity-separator {
+                margin: 1px 0;
+            }
+
+            .activity .subject {
+                margin-bottom: 1px;
             }
         }
     </style>
