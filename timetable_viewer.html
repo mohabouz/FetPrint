@@ -105,6 +105,12 @@
             pointer-events: none;
         }
 
+        /* Ensure icons inside buttons/tabs don't block the button's click handler */
+        button i.ti,
+        .tab i.ti {
+            pointer-events: none;
+        }
+
         .tabs {
             display: flex;
             justify-content: center;
@@ -1103,6 +1109,18 @@
             en: {
                 header: { title: 'FET Timetable Viewer', subtitle: 'Import and view timetables for Teachers, Students, and Rooms' },
                 tabs: { teachers: 'Teachers', students: 'Students', rooms: 'Rooms', print: 'Print/PDF', settings: 'Settings', appearance: 'Appearance', data: 'Data Management' },
+                status: {
+                    noFilesSelected: 'No files were selected',
+                    noFilesSelectedShort: 'No files selected',
+                    cannotOpenDialog: 'Cannot open file dialog. Try drag and drop instead.',
+                    dropOnlyFetXml: 'Please drop .fet or .xml files only',
+                    loadingFiles: 'Loading files...',
+                    processingFile: 'Processing {{file}}...',
+                    dropdownsFailed: 'Data loaded but dropdowns failed to populate. Use manual functions.',
+                    parseSuccess: 'Successfully loaded {{files}} file(s). Found {{entities}} entities and {{activities}} activities.',
+                    lastFileCouldNotLoad: 'Last file could not be auto-loaded',
+                    diagnostics: 'Check console for diagnostics'
+                },
                 dropdown: { selectTeacher: 'Select Teacher:', chooseTeacher: 'Choose a teacher...', selectStudent: 'Select Student Group:', chooseStudent: 'Choose a student group...', selectRoom: 'Select Room:', chooseRoom: 'Choose a room...' },
                 radio: {
                     teacherIndividual: 'Individual Teacher',
@@ -1153,6 +1171,18 @@
             fr: {
                 header: { title: 'Visionneuse d\'emploi du temps FET', subtitle: 'Importer et afficher les emplois du temps pour les enseignants, les élèves et les salles' },
                 tabs: { teachers: 'Enseignants', students: 'Étudiants', rooms: 'Salles', print: 'Imprimer/PDF', settings: 'Paramètres', appearance: 'Apparence', data: 'Gestion des données' },
+                status: {
+                    noFilesSelected: 'Aucun fichier sélectionné',
+                    noFilesSelectedShort: 'Aucun fichier',
+                    cannotOpenDialog: 'Impossible d\'ouvrir la boîte de dialogue. Essayez le glisser-déposer.',
+                    dropOnlyFetXml: 'Déposez uniquement des fichiers .fet ou .xml',
+                    loadingFiles: 'Chargement des fichiers...',
+                    processingFile: 'Traitement de {{file}}...',
+                    dropdownsFailed: 'Données chargées mais les listes n\'ont pas pu être remplies.',
+                    parseSuccess: '{{files}} fichier(s) chargé(s). {{entities}} entités et {{activities}} activités trouvées.',
+                    lastFileCouldNotLoad: 'Le dernier fichier n\'a pas pu être rechargé',
+                    diagnostics: 'Voir la console pour le diagnostic'
+                },
                 dropdown: { selectTeacher: 'Sélectionner un enseignant:', chooseTeacher: 'Choisir un enseignant...', selectStudent: 'Sélectionner un groupe d\'étudiants:', chooseStudent: 'Choisir un groupe...', selectRoom: 'Sélectionner une salle:', chooseRoom: 'Choisir une salle...' },
                 radio: {
                     teacherIndividual: 'Enseignant individuel',
@@ -1201,6 +1231,18 @@
             ar: {
                 header: { title: 'عارض جداول FET', subtitle: 'استيراد وعرض جداول الأساتذة والتلاميذ والقاعات' },
                 tabs: { teachers: 'الأساتذة', students: 'التلاميذ', rooms: 'القاعات', print: 'طباعة/PDF', settings: 'الإعدادات', appearance: 'المظهر', data: 'إدارة البيانات' },
+                status: {
+                    noFilesSelected: 'لم يتم اختيار أي ملفات',
+                    noFilesSelectedShort: 'لا ملفات',
+                    cannotOpenDialog: 'تعذر فتح نافذة اختيار الملفات. جرّب السحب والإفلات.',
+                    dropOnlyFetXml: 'يرجى إفلات ملفات fet أو xml فقط',
+                    loadingFiles: 'جارٍ تحميل الملفات...',
+                    processingFile: 'جارٍ معالجة {{file}}...',
+                    dropdownsFailed: 'تم تحميل البيانات لكن القوائم لم تُحدّث.',
+                    parseSuccess: 'تم تحميل {{files}} ملف(ات). تم العثور على {{entities}} كيان و {{activities}} نشاط.',
+                    lastFileCouldNotLoad: 'تعذر تحميل آخر ملف تلقائياً',
+                    diagnostics: 'تحقق من وحدة التحكم للتشخيص'
+                },
                 dropdown: { selectTeacher: 'اختر المعلم:', chooseTeacher: 'أستاذ أو أساتذة', selectStudent: 'اختر مجموعة تلاميذ:', chooseStudent: 'اختر مجموعة...', selectRoom: 'اختر القاعة:', chooseRoom: 'اختر قاعة...' },
                 radio: {
                     teacherIndividual: 'معلم فردي',
@@ -1486,7 +1528,7 @@
                         this.handleFileUpload(e.target.files);
                     } else {
                         console.log('No files selected');
-                        this.updateFileStatus('⚠️ No files were selected', 'error');
+                        this.updateFileStatus(this.t('status.noFilesSelected'), 'error');
                     }
                 });
 
@@ -1518,7 +1560,7 @@
                             console.log('Programmatically triggered file input');
                         } catch (error) {
                             console.error('Error triggering file input:', error);
-                            this.updateFileStatus('❌ Cannot open file dialog. Try drag and drop instead.', 'error');
+                            this.updateFileStatus(this.t('status.cannotOpenDialog'), 'error');
                         }
                     });
                 }
@@ -1555,14 +1597,27 @@
                     if (xmlFiles.length > 0) {
                         this.handleFileUpload(xmlFiles);
                     } else {
-                        this.updateFileStatus('❌ Please drop .fet or .xml files only', 'error');
+                        this.updateFileStatus(this.t('status.dropOnlyFetXml'), 'error');
                     }
                 });
 
-                // Tab switching
+                // Tab switching (use currentTarget so clicks on inner icon/text still work)
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.addEventListener('click', (e) => {
-                        this.switchTab(e.target.dataset.tab);
+                        // If an inner element (like an <i>) was clicked, climb up to the .tab
+                        const btn = e.currentTarget || e.target.closest('.tab') || tab;
+                        const tabName = btn && btn.dataset ? btn.dataset.tab : tab.dataset.tab;
+                        this.switchTab(tabName);
+                    });
+                    // Basic keyboard accessibility
+                    tab.setAttribute('tabindex', '0');
+                    tab.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const btn = e.currentTarget || e.target.closest('.tab') || tab;
+                            const tabName = btn && btn.dataset ? btn.dataset.tab : tab.dataset.tab;
+                            this.switchTab(tabName);
+                        }
                     });
                 });
 
@@ -1696,7 +1751,7 @@
 
                 if (!files || files.length === 0) {
                     console.log('No files provided');
-                    this.updateFileStatus('⚠️ No files selected', 'error');
+                    this.updateFileStatus(this.t('status.noFilesSelectedShort'), 'error');
                     return;
                 }
 
@@ -1705,7 +1760,7 @@
                     console.log(`File ${i + 1}: ${files[i].name} (${files[i].size} bytes)`);
                 }
 
-                this.updateFileStatus('Loading files...', 'loading');
+                this.updateFileStatus(this.t('status.loadingFiles'), 'loading');
 
                 try {
                     this.showLoading();
@@ -1722,7 +1777,7 @@
                     for (let i = 0; i < files.length; i++) {
                         const file = files[i];
                         console.log(`Processing file ${i + 1}/${files.length}: ${file.name} (${file.size} bytes)`);
-                        this.updateFileStatus(`Processing ${file.name}...`, 'loading');
+                        this.updateFileStatus(this.t('status.processingFile', { file: file.name }), 'loading');
 
                         const text = await this.readFile(file);
                         console.log('File read successfully, length:', text.length);
@@ -1746,14 +1801,14 @@
                                 this.populateDropdowns();
                             } catch (retryError) {
                                 console.error('Retry failed:', retryError);
-                                this.updateFileStatus('⚠️ Data loaded but dropdowns failed to populate. Use manual functions.', 'error');
+                                this.updateFileStatus(this.t('status.dropdownsFailed'), 'error');
                             }
                         }, 100);
                     }
 
                     const totalItems = this.data.teachers.size + this.data.students.size + this.data.rooms.size;
                     console.log(`Parse complete - Teachers: ${this.data.teachers.size}, Students: ${this.data.students.size}, Rooms: ${this.data.rooms.size}, Activities: ${this.data.activities.length}`);
-                    this.updateFileStatus(`✅ Successfully loaded ${files.length} file(s). Found ${totalItems} entities and ${this.data.activities.length} activities.`, 'success');
+                    this.updateFileStatus(this.t('status.parseSuccess', { files: files.length, entities: totalItems, activities: this.data.activities.length }), 'success');
 
                     // Save the last imported file for auto-loading
                     if (files.length > 0) {
@@ -1762,7 +1817,7 @@
 
                 } catch (error) {
                     console.error('Error loading files:', error);
-                    this.updateFileStatus(`❌ Error: ${error.message}`, 'error');
+                    this.updateFileStatus(error.message, 'error');
                     this.showError('Error loading files: ' + error.message);
                 }
             }
@@ -1843,11 +1898,11 @@
                         console.log('Auto-loading last imported file:', lastFile.name);
                         await this.parseXML(lastFile.content, lastFile.name);
                         this.populateDropdowns();
-                        this.updateFileStatus(`Auto-loaded: ${lastFile.name}`, 'success');
+                        this.updateFileStatus(this.t('status.processingFile', { file: lastFile.name }), 'success');
                         return true;
                     } catch (error) {
                         console.warn('Could not auto-load last file:', error);
-                        this.updateFileStatus('Last file could not be auto-loaded', 'warning');
+                        this.updateFileStatus(this.t('status.lastFileCouldNotLoad'), 'warning');
                     }
                 }
                 return false;
@@ -2479,19 +2534,36 @@
             }
 
             switchTab(tabName) {
-                // Update tab buttons
-                document.querySelectorAll('.tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                if (!tabName) return;
+                try {
+                    const tabButtons = document.querySelectorAll('.tab');
+                    if (tabButtons && tabButtons.length) {
+                        tabButtons.forEach(btn => btn && btn.classList && btn.classList.remove('active'));
+                    }
+                    const newActiveBtn = document.querySelector(`[data-tab="${tabName}"]`);
+                    if (newActiveBtn && newActiveBtn.classList) {
+                        newActiveBtn.classList.add('active');
+                    } else {
+                        console.warn('Tab button not found for', tabName);
+                    }
 
-                // Update tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(`${tabName}-content`).classList.add('active');
+                    const panels = document.querySelectorAll('.tab-content');
+                    if (panels && panels.length) {
+                        panels.forEach(p => p && p.classList && p.classList.remove('active'));
+                    }
+                    const targetPanel = document.getElementById(`${tabName}-content`);
+                    if (targetPanel && targetPanel.classList) {
+                        targetPanel.classList.add('active');
+                    } else {
+                        console.warn('Tab panel not found for', tabName);
+                        return; // Prevent setting currentTab if panel missing
+                    }
 
-                this.currentTab = tabName;
+                    this.currentTab = tabName;
+                    try { localStorage.setItem('fetLastTab', tabName); } catch (_) { }
+                } catch (e) {
+                    console.error('switchTab error for', tabName, e);
+                }
             }
 
             showTeacherTimetable(teacherName) {
@@ -2980,7 +3052,7 @@
             }
 
             showError(message) {
-                const errorDiv = `<div class="error">❌ ${message}</div>`;
+                const errorDiv = `<div class="error"><i class=\"ti ti-circle-x\" aria-hidden=\"true\"></i> ${message}</div>`;
                 document.querySelectorAll('.timetable-container').forEach(container => {
                     container.innerHTML = errorDiv;
                 });
@@ -3055,7 +3127,16 @@
                 }
 
                 statusDiv.style.display = 'block';
-                statusDiv.textContent = message;
+                // Choose an icon based on type
+                let iconClass = 'ti-info-circle';
+                switch (type) {
+                    case 'loading': iconClass = 'ti-loader-2'; break;
+                    case 'success': iconClass = 'ti-circle-check'; break;
+                    case 'error': iconClass = 'ti-circle-x'; break;
+                    case 'warning': iconClass = 'ti-alert-triangle'; break;
+                    default: iconClass = 'ti-info-circle';
+                }
+                statusDiv.innerHTML = `<i class="ti ${iconClass}" aria-hidden="true" style="margin-right:6px;"></i> <span>${message}</span>`;
 
                 // Remove previous classes
                 statusDiv.className = '';
@@ -3515,7 +3596,7 @@
             }
 
             showInfo(message) {
-                const infoDiv = `<div class="info-panel">✅ ${message}</div>`;
+                const infoDiv = `<div class="info-panel"><i class="ti ti-circle-check" aria-hidden="true"></i> ${message}</div>`;
                 document.querySelector('.content-wrapper').insertAdjacentHTML('afterbegin', infoDiv);
 
                 // Remove info after 5 seconds
@@ -3613,9 +3694,8 @@
                     }
                     if (p) p.textContent = this.t('header.subtitle');
 
-                    // Update file input label
-                    const fileLabel = document.querySelector('.file-input-label');
-                    if (fileLabel) fileLabel.textContent = this.t('buttons.upload');
+                    // File input label already handled by generic data-i18n loop above while preserving its icon.
+                    // (Removed redundant override that was stripping the icon.)
 
                     // Update how-to block
                     document.querySelectorAll('[data-i18n-howto]').forEach((el, idx) => {
