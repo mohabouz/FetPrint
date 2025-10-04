@@ -1116,6 +1116,7 @@
                     dropOnlyFetXml: 'Please drop .fet or .xml files only',
                     loadingFiles: 'Loading files...',
                     processingFile: 'Processing {{file}}...',
+                    autoLoaded: 'Re-loaded previously imported file: {{file}}',
                     dropdownsFailed: 'Data loaded but dropdowns failed to populate. Use manual functions.',
                     parseSuccess: 'Successfully loaded {{files}} file(s). Found {{entities}} entities and {{activities}} activities.',
                     lastFileCouldNotLoad: 'Last file could not be auto-loaded',
@@ -1178,6 +1179,7 @@
                     dropOnlyFetXml: 'Déposez uniquement des fichiers .fet ou .xml',
                     loadingFiles: 'Chargement des fichiers...',
                     processingFile: 'Traitement de {{file}}...',
+                    autoLoaded: 'Fichier précédent rechargé : {{file}}',
                     dropdownsFailed: 'Données chargées mais les listes n\'ont pas pu être remplies.',
                     parseSuccess: '{{files}} fichier(s) chargé(s). {{entities}} entités et {{activities}} activités trouvées.',
                     lastFileCouldNotLoad: 'Le dernier fichier n\'a pas pu être rechargé',
@@ -1238,6 +1240,7 @@
                     dropOnlyFetXml: 'يرجى إفلات ملفات fet أو xml فقط',
                     loadingFiles: 'جارٍ تحميل الملفات...',
                     processingFile: 'جارٍ معالجة {{file}}...',
+                    autoLoaded: 'تم إعادة تحميل الملف السابق: {{file}}',
                     dropdownsFailed: 'تم تحميل البيانات لكن القوائم لم تُحدّث.',
                     parseSuccess: 'تم تحميل {{files}} ملف(ات). تم العثور على {{entities}} كيان و {{activities}} نشاط.',
                     lastFileCouldNotLoad: 'تعذر تحميل آخر ملف تلقائياً',
@@ -1898,7 +1901,7 @@
                         console.log('Auto-loading last imported file:', lastFile.name);
                         await this.parseXML(lastFile.content, lastFile.name);
                         this.populateDropdowns();
-                        this.updateFileStatus(this.t('status.processingFile', { file: lastFile.name }), 'success');
+                        this.updateFileStatus(this.t('status.autoLoaded', { file: lastFile.name }), 'success');
                         return true;
                     } catch (error) {
                         console.warn('Could not auto-load last file:', error);
