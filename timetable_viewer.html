@@ -2891,54 +2891,89 @@
                         html += '</tr>';
                     });
                 } else {
-                    // Generate rows for each hour (horizontal layout)
-                    // Track which hours have activities that span multiple hours to avoid duplication
-                    const processedActivities = new Set();
+                    // Horizontal layout with rowspan support for multi-hour activities
+                    // skipMatrix[dayIndex] = remaining rows to skip because of an active rowspan
+                    const skipMatrix = new Array(dayNames.length).fill(0);
 
-                    hourNames.forEach((hourName, hourIndex) => {
+                    hourNames.forEach((hourName, expandedHourIndex) => {
                         html += `<tr><td class="time-header"><strong>${hourName}</strong></td>`;
 
-                        // Get the actual hour and virtual day for this expanded hour index
-                        const { actualHour, virtualDayOffset } = this.getActualHourAndDay(hourIndex);
+                        const { actualHour, virtualDayOffset } = this.getActualHourAndDay(expandedHourIndex);
 
                         dayNames.forEach((dayName, dayIndex) => {
-                            // Find all virtual days that belong to this real day
+                            // If a previous cell spans into this row, decrement counter and output nothing
+                            if (skipMatrix[dayIndex] > 0) {
+                                skipMatrix[dayIndex]--;
+                                return; // cell covered by rowspan above
+                            }
+
                             const virtualDaysForRealDay = this.getVirtualDaysForRealDay(dayIndex);
                             const targetVirtualDay = virtualDaysForRealDay[virtualDayOffset] || virtualDaysForRealDay[0];
 
-                            // Find activities that start at this specific time slot
-                            const slotActivities = activities.filter(activity => {
-                                return activity.day === targetVirtualDay && activity.hour === actualHour &&
-                                    !processedActivities.has(activity.id);
-                            });
+                            // Activities that start exactly at this hour on this (virtual) day
+                            const slotActivities = activities.filter(a => a.day === targetVirtualDay && a.hour === actualHour);
 
-                            const emptyClass = slotActivities.length === 0 ? ' class="empty-slot"' : '';
-                            html += `<td${emptyClass}>`;
+                            if (slotActivities.length === 0) {
+                                html += '<td class="empty-slot"></td>';
+                                return;
+                            }
 
-                            slotActivities.forEach(activity => {
-                                const duration = activity.duration || 1;
+                            // Determine rowspan: maximum duration among starting activities
+                            const durations = slotActivities.map(a => parseInt(a.duration || 1, 10) || 1);
+                            const maxDuration = Math.max(...durations);
+                            if (maxDuration > 1) {
+                                skipMatrix[dayIndex] = maxDuration - 1; // rows to skip below
+                            }
 
-                                // Mark this activity as processed
-                                processedActivities.add(activity.id);
+                            const rowspanAttr = maxDuration > 1 ? ` rowspan="${maxDuration}"` : '';
+                            html += `<td${rowspanAttr}>`;
 
-                                // Create activity with duration indicator
-                                const backgroundColor = this.getActivityBackgroundColor(activity, type);
+                            // Content: if student with multiple simultaneous activities, list similarly to vertical logic
+                            if (type === 'student' && slotActivities.length > 1) {
+                                const primary = slotActivities[0];
+                                const backgroundColor = this.getActivityBackgroundColor(primary, type);
                                 const textColor = this.getContrastTextColor(backgroundColor);
-                                html += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
-                                if (type === 'teacher') {
-                                    // Subject shown in header; omit subject inside activity block for teachers
-                                    html += `<div class="class-group">${activity.students}</div>`;
-                                } else if (type === 'student') {
-                                    html += `<div class="subject">${activity.subject}</div>`;
-                                    html += `<div class="room">${activity.room || ''}</div>`;
-                                } else if (type === 'room') {
-                                    html += `<div class="subject">${activity.subject}</div>`;
-                                    html += `<div class="teacher">${activity.teacher}</div>`;
-                                    html += `<div class="students">${activity.students}</div>`;
-                                }
-
+                                html += `<div class=\"activity\" style=\"background: ${backgroundColor}; color: ${textColor};\">`;
+                                const isSubSelection = entityName && entityName.includes('-');
+                                const parentOfSelection = isSubSelection ? entityName.split('-').slice(0, -1).join('-') : null;
+                                slotActivities.forEach((activity, idx) => {
+                                    if (idx > 0) html += '<hr class=\"activity-separator\">';
+                                    html += `<div class=\"subject\">${activity.subject}</div>`;
+                                    if (activity.students && activity.students !== entityName) {
+                                        if (!(isSubSelection && activity.students === parentOfSelection)) {
+                                            html += `<div class=\"subgroup\">${activity.students}</div>`;
+                                        }
+                                    }
+                                    html += `<div class=\"room\">${activity.room || ''}</div>`;
+                                });
                                 html += '</div>';
-                            });
+                            } else {
+                                // Render each activity stacked (rare to have >1 for teacher/room, but handle anyway)
+                                slotActivities.forEach(activity => {
+                                    const backgroundColor = this.getActivityBackgroundColor(activity, type);
+                                    const textColor = this.getContrastTextColor(backgroundColor);
+                                    html += `<div class="activity" style="background: ${backgroundColor}; color: ${textColor};">`;
+                                    if (type === 'teacher') {
+                                        html += `<div class="class-group">${activity.students}</div>`;
+                                        if (activity.room) html += `<div class="room">${activity.room}</div>`;
+                                    } else if (type === 'student') {
+                                        html += `<div class="subject">${activity.subject}</div>`;
+                                        if (activity.students && activity.students !== entityName) {
+                                            const isSubSelectionSingle = entityName && entityName.includes('-');
+                                            const parentOfSelectionSingle = isSubSelectionSingle ? entityName.split('-').slice(0, -1).join('-') : null;
+                                            if (!(isSubSelectionSingle && activity.students === parentOfSelectionSingle)) {
+                                                html += `<div class="subgroup">${activity.students}</div>`;
+                                            }
+                                        }
+                                        html += `<div class="room">${activity.room || ''}</div>`;
+                                    } else if (type === 'room') {
+                                        html += `<div class="subject">${activity.subject}</div>`;
+                                        html += `<div class="teacher">${activity.teacher}</div>`;
+                                        html += `<div class="students">${activity.students}</div>`;
+                                    }
+                                    html += '</div>';
+                                });
+                            }
 
                             html += '</td>';
                         });
@@ -2961,50 +2996,54 @@
                     }
                 }
 
-                // Add teachers list for students
+                // Add teachers list and subgroup listing for students
                 if (type === 'student' && entityName) {
-                    // Use all activities passed to this function (which includes subgroup activities)
                     const studentActivities = activities;
                     const subjectTeachers = {};
                     studentActivities.forEach(activity => {
-                        if (!subjectTeachers[activity.subject]) {
-                            subjectTeachers[activity.subject] = [];
-                        }
+                        if (!subjectTeachers[activity.subject]) subjectTeachers[activity.subject] = [];
                         if (!subjectTeachers[activity.subject].includes(activity.teacher)) {
                             subjectTeachers[activity.subject].push(activity.teacher);
                         }
                     });
 
+                    // Detect subgroups: names in activities that begin with entityName + '-' but are not equal
+                    const subgroupSet = new Set();
+                    const subgroupPattern = entityName + '-';
+                    this.data.activities.forEach(act => {
+                        if (!act.students) return;
+                        const parts = act.students.split(/[,;\/]+/).map(s => s.trim()).filter(Boolean);
+                        parts.forEach(p => { if (p.startsWith(subgroupPattern) && p !== entityName) subgroupSet.add(p); });
+                    });
+
+                    // Also consider student map keys (if structured that way)
+                    this.data.students.forEach((val, key) => {
+                        if (key.startsWith(subgroupPattern) && key !== entityName) subgroupSet.add(key);
+                    });
+
+                    const subgroups = Array.from(subgroupSet).sort(this.collator.compare);
+
+                    // (Removed subgroup listing display per user request.)
+
                     if (Object.keys(subjectTeachers).length > 0) {
-                        html += `<div class="subject-teachers">
-                            <h4>${this.t ? this.t('misc.teachersBySubject') : 'Teachers by Subject:'}</h4>
-                            <table class="teachers-table">`;
-
+                        html += `<div class="subject-teachers">` +
+                            `<h4>${this.t ? this.t('misc.teachersBySubject') : 'Teachers by Subject:'}</h4>` +
+                            `<table class="teachers-table">`;
                         const entries = Object.entries(subjectTeachers);
-
-                        // Process entries in pairs for 4-column layout
                         for (let i = 0; i < entries.length; i += 2) {
                             html += '<tr>';
-
-                            // First pair (Subject | Teacher)
                             const [subject1, teachers1] = entries[i];
                             html += `<td class="subject-cell"><strong>${subject1}</strong></td>`;
                             html += `<td class="teacher-cell">${teachers1.join(', ')}</td>`;
-
-                            // Second pair (Subject | Teacher) if exists
                             if (i + 1 < entries.length) {
                                 const [subject2, teachers2] = entries[i + 1];
                                 html += `<td class="subject-cell"><strong>${subject2}</strong></td>`;
                                 html += `<td class="teacher-cell">${teachers2.join(', ')}</td>`;
                             } else {
-                                // Fill empty cells if odd number of entries
-                                html += `<td class="subject-cell"></td>`;
-                                html += `<td class="teacher-cell"></td>`;
+                                html += `<td class="subject-cell"></td><td class="teacher-cell"></td>`;
                             }
-
                             html += '</tr>';
                         }
-
                         html += '</table></div>';
                     }
                 }
