@@ -790,23 +790,23 @@
 
 <body>
     <div class="header">
-        <h1>📚 FET Timetable Viewer</h1>
-        <p>Import and view timetables for Teachers, Students, and Rooms</p>
+        <h1 data-i18n="header.title">📚 FET Timetable Viewer</h1>
+        <p data-i18n="header.subtitle">Import and view timetables for Teachers, Students, and Rooms</p>
     </div>
 
     <div class="file-upload">
         <div class="file-upload-area" id="fileDropArea">
             <label class="file-input-wrapper" for="xmlFile">
                 <input type="file" id="xmlFile" accept=".fet,.xml,text/xml,application/xml" multiple>
-                <span class="file-input-label">📁 Select FET XML Files</span>
+                <span class="file-input-label" data-i18n="buttons.upload">📁 Select FET XML Files</span>
             </label>
-            <p style="margin-top: 15px; color: #666;">Or drag and drop your files here</p>
+            <p style="margin-top: 15px; color: #666;" data-i18n="howto.dragdrop">Or drag and drop your files here</p>
             <div
                 style="margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; font-size: 14px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                💡 <strong>How to use:</strong><br>
-                1. Click "Select FET XML Files" button above<br>
-                2. Navigate to your folder and select <code>TimeTable.fet</code><br>
-                3. The file will be processed and you can view timetables in the tabs below
+                💡 <strong data-i18n="howto.title">How to use:</strong><br>
+                <div data-i18n-howto>1. Click "Select FET XML Files" button above</div>
+                <div data-i18n-howto>2. Navigate to your folder and select <code>TimeTable.fet</code></div>
+                <div data-i18n-howto>3. The file will be processed and you can view timetables in the tabs below</div>
             </div>
             <div style="margin-top: 10px; display: none; gap: 10px; justify-content: center; flex-wrap: wrap;">
                 <button id="testButton"
@@ -823,19 +823,20 @@
     </div>
 
     <div class="tabs">
-        <button class="tab active" data-tab="teachers">👨‍🏫 Teachers</button>
-        <button class="tab" data-tab="students">👥 Students</button>
-        <button class="tab" data-tab="rooms">🏫 Rooms</button>
-        <button class="tab" data-tab="print">🖨️ Print/PDF</button>
-        <button class="tab" data-tab="settings">⚙️ Settings</button>
+        <button class="tab active" data-tab="teachers" data-i18n="tabs.teachers">👨‍🏫 Teachers</button>
+        <button class="tab" data-tab="students" data-i18n="tabs.students">👥 Students</button>
+        <button class="tab" data-tab="rooms" data-i18n="tabs.rooms">🏫 Rooms</button>
+        <button class="tab" data-tab="print" data-i18n="tabs.print">🖨️ Print/PDF</button>
+        <button class="tab" data-tab="settings" data-i18n="tabs.settings">⚙️ Settings</button>
     </div>
 
     <div class="content-wrapper">
         <div id="teachers-content" class="tab-content active">
             <div class="dropdown-container">
-                <label class="dropdown-label" for="teacherSelect">Select Teacher:</label>
+                <label class="dropdown-label" for="teacherSelect" data-i18n="dropdown.selectTeacher">Select
+                    Teacher:</label>
                 <select id="teacherSelect" class="dropdown">
-                    <option value="">Choose a teacher...</option>
+                    <option value="" data-i18n-placeholder="dropdown.chooseTeacher">Choose a teacher...</option>
                 </select>
             </div>
             <div id="teacherTimetable" class="timetable-container"></div>
@@ -843,9 +844,10 @@
 
         <div id="students-content" class="tab-content">
             <div class="dropdown-container">
-                <label class="dropdown-label" for="studentSelect">Select Student Group:</label>
+                <label class="dropdown-label" for="studentSelect" data-i18n="dropdown.selectStudent">Select Student
+                    Group:</label>
                 <select id="studentSelect" class="dropdown">
-                    <option value="">Choose a student group...</option>
+                    <option value="" data-i18n-placeholder="dropdown.chooseStudent">اختر مجموعة تلاميذ</option>
                 </select>
             </div>
             <div id="studentTimetable" class="timetable-container"></div>
@@ -853,9 +855,9 @@
 
         <div id="rooms-content" class="tab-content">
             <div class="dropdown-container">
-                <label class="dropdown-label" for="roomSelect">Select Room:</label>
+                <label class="dropdown-label" for="roomSelect" data-i18n="dropdown.selectRoom">Select Room:</label>
                 <select id="roomSelect" class="dropdown">
-                    <option value="">Choose a room...</option>
+                    <option value="" data-i18n-placeholder="dropdown.chooseRoom">Choose a room...</option>
                 </select>
             </div>
             <div id="roomTimetable" class="timetable-container"></div>
@@ -864,9 +866,9 @@
         <div id="settings-content" class="tab-content">
             <div class="settings-panel">
                 <div class="settings-section">
-                    <h3>🌐 Display Settings</h3>
+                    <h3 data-i18n="settings.display">🌐 Display Settings</h3>
                     <div class="setting-item">
-                        <label>Text Direction:</label>
+                        <label data-i18n="settings.textDirection">Text Direction:</label>
                         <label class="toggle-switch">
                             <input type="checkbox" id="rtlToggle">
                             <span class="slider"></span>
@@ -874,7 +876,7 @@
                         <span id="rtlLabel">LTR (Left to Right)</span>
                     </div>
                     <div class="setting-item">
-                        <label>Language:</label>
+                        <label data-i18n="settings.language">Language:</label>
                         <select id="languageSelect">
                             <option value="en">English</option>
                             <option value="ar">العربية</option>
@@ -884,79 +886,87 @@
                 </div>
 
                 <div class="settings-section">
-                    <h3>📅 Time Settings</h3>
+                    <h3 data-i18n="timeSettings.title">📅 Time Settings</h3>
                     <div class="setting-item">
-                        <label>Day Names:</label>
+                        <label data-i18n="timeSettings.dayNames">Day Names:</label>
                         <select id="dayNamesFormat">
-                            <option value="original">Original (from file)</option>
-                            <option value="english">English</option>
-                            <option value="arabic">Arabic</option>
-                            <option value="french">French</option>
-                            <option value="custom">Custom</option>
+                            <option value="original" data-i18n-placeholder="options.original">Original (from file)
+                            </option>
+                            <option value="english" data-i18n-placeholder="options.english">English</option>
+                            <option value="arabic" data-i18n-placeholder="options.arabic">Arabic</option>
+                            <option value="french" data-i18n-placeholder="options.french">French</option>
+                            <option value="custom" data-i18n-placeholder="options.custom">Custom</option>
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label>Hour Format:</label>
+                        <label data-i18n="timeSettings.hourFormat">Hour Format:</label>
                         <select id="hourFormat">
-                            <option value="original">Original (from file)</option>
-                            <option value="24h">24 Hour (08:00, 09:00, ...)</option>
-                            <option value="12h">12 Hour (8 AM, 9 AM, ...)</option>
-                            <option value="period">Period (1st, 2nd, 3rd, ...)</option>
-                            <option value="custom">Custom</option>
+                            <option value="original" data-i18n-placeholder="options.original">Original (from file)
+                            </option>
+                            <option value="24h" data-i18n-placeholder="options.24h">24 Hour (08:00, 09:00, ...)</option>
+                            <option value="12h" data-i18n-placeholder="options.12h">12 Hour (8 AM, 9 AM, ...)</option>
+                            <option value="period" data-i18n-placeholder="options.period">Period (1st, 2nd, 3rd, ...)
+                            </option>
+                            <option value="custom" data-i18n-placeholder="options.custom">Custom</option>
                         </select>
                     </div>
                     <div class="setting-item">
-                        <label>Morning Start:</label>
+                        <label data-i18n="helpers.morningStart">Morning Start:</label>
                         <input type="number" id="morningStart" min="0" max="23" value="8"
                             style="width:80px; padding:6px;" />
-                        <small style="color:#666; font-size:11px; margin-left:10px;">Start hour for the morning
+                        <small style="color:#666; font-size:11px; margin-left:10px;"
+                            data-i18n="helpers.morningStart">Start hour for the morning
                             session</small>
                     </div>
                     <div class="setting-item">
-                        <label>Afternoon Start:</label>
+                        <label data-i18n="helpers.afternoonStart">Afternoon Start:</label>
                         <input type="number" id="afternoonStart" min="0" max="23" value="14"
                             style="width:80px; padding:6px;" />
-                        <small style="color:#666; font-size:11px; margin-left:10px;">Start hour for the afternoon
+                        <small style="color:#666; font-size:11px; margin-left:10px;"
+                            data-i18n="helpers.afternoonStart">Start hour for the afternoon
                             session</small>
                     </div>
                     <div class="settings-section">
-                        <h3>📝 Custom Day Names</h3>
+                        <h3 data-i18n="timeSettings.dayNames">📝 Custom Day Names</h3>
                         <div id="dayNamesInputs" class="custom-inputs-grid"></div>
                     </div>
                     <div class="settings-section">
-                        <h3>🕐 Custom Hour Names</h3>
+                        <h3 data-i18n="timeSettings.hourFormat">🕐 Custom Hour Names</h3>
                         <div id="hourNamesInputs" class="custom-inputs-grid"></div>
                     </div>
                 </div>
 
                 <div class="settings-section">
-                    <h3>🎨 Appearance</h3>
+                    <h3 data-i18n="tabs.appearance">🎨 Appearance</h3>
                     <div class="setting-item">
-                        <label>Table Layout:</label>
+                        <label data-i18n-placeholder="options.tableLayout">Table Layout:</label>
                         <select id="tableLayout">
-                            <option value="vertical">Days Vertical (recommended)</option>
-                            <option value="horizontal">Days Horizontal</option>
+                            <option value="vertical" data-i18n-placeholder="options.vertical">Days Vertical
+                                (recommended)</option>
+                            <option value="horizontal" data-i18n-placeholder="options.horizontal">Days Horizontal
+                            </option>
                         </select>
                     </div>
                     <div class="setting-item">
                         <label>Base Color (for color generation):</label>
                         <input type="color" id="activityColor" value="#28a745">
-                        <small style="color: #666; font-size: 11px; margin-left: 10px;">
+                        <small style="color: #666; font-size: 11px; margin-left: 10px;"
+                            data-i18n="helpers.activityColorInfo">
                             Activities use auto-generated colors: Students by Subject, Teachers by Class
                         </small>
                     </div>
                 </div>
 
                 <div class="settings-section">
-                    <h3>💾 Data Management</h3>
+                    <h3 data-i18n="tabs.data">💾 Data Management</h3>
                     <div class="setting-item">
                         <button id="resetSettings"
                             style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            🔄 Reset to Defaults
+                            <span data-i18n="misc.resetDefaults">🔄 Reset to Defaults</span>
                         </button>
                         <button id="exportSettings"
                             style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            📤 Export Settings
+                            <span data-i18n="misc.exportSettings">📤 Export Settings</span>
                         </button>
                     </div>
                 </div>
@@ -965,23 +975,25 @@
 
         <div id="print-content" class="tab-content">
             <div class="print-options">
-                <h3>🖨️ Print & Save as PDF</h3>
-                <p>Select what you want to print or save as PDF:</p>
+                <h3 data-i18n="tabs.print">🖨️ Print & Save as PDF</h3>
+                <p data-i18n="print.instructions">Select what you want to print or save as PDF:</p>
 
                 <div class="print-section">
-                    <h4>👨‍🏫 Teachers</h4>
+                    <h4 data-i18n="print.teachers">👨‍🏫 Teachers</h4>
                     <div class="print-controls">
                         <div class="selection-type">
-                            <label><input type="radio" name="teacher-selection" value="individual" checked> Individual
-                                Teacher</label>
-                            <label><input type="radio" name="teacher-selection" value="selected"> Selected
-                                Teachers</label>
-                            <label><input type="radio" name="teacher-selection" value="all"> All Teachers</label>
+                            <label><input type="radio" name="teacher-selection" value="individual" checked> <span
+                                    data-i18n="radio.teacherIndividual">Individual Teacher</span></label>
+                            <label><input type="radio" name="teacher-selection" value="selected"> <span
+                                    data-i18n="radio.teacherSelected">Selected Teachers</span></label>
+                            <label><input type="radio" name="teacher-selection" value="all"> <span
+                                    data-i18n="radio.teacherAll">All Teachers</span></label>
                         </div>
 
                         <div id="individual-teacher" class="selection-controls">
                             <select id="printTeacherSelect" class="dropdown">
-                                <option value="">Choose a teacher...</option>
+                                <option value="" data-i18n-placeholder="dropdown.chooseTeacher">Choose a teacher...
+                                </option>
                             </select>
                         </div>
 
@@ -989,25 +1001,28 @@
                             <div class="checkbox-list" id="teacherCheckboxList"></div>
                         </div>
 
-                        <button onclick="timetableViewer.printTimetables('teacher')" class="print-btn">🖨️ Print
+                        <button onclick="timetableViewer.printTimetables('teacher')" class="print-btn"
+                            data-i18n="print.teachers">🖨️ Print
                             Teachers</button>
                     </div>
                 </div>
 
                 <div class="print-section">
-                    <h4>👥 Students</h4>
+                    <h4 data-i18n="print.students">👥 Students</h4>
                     <div class="print-controls">
                         <div class="selection-type">
-                            <label><input type="radio" name="student-selection" value="individual" checked> Individual
-                                Student Group</label>
-                            <label><input type="radio" name="student-selection" value="selected"> Selected
-                                Groups</label>
-                            <label><input type="radio" name="student-selection" value="all"> All Student Groups</label>
+                            <label><input type="radio" name="student-selection" value="individual" checked> <span
+                                    data-i18n="radio.studentIndividual">Individual Student Group</span></label>
+                            <label><input type="radio" name="student-selection" value="selected"> <span
+                                    data-i18n="radio.studentSelected">Selected Groups</span></label>
+                            <label><input type="radio" name="student-selection" value="all"> <span
+                                    data-i18n="radio.studentAll">All Student Groups</span></label>
                         </div>
 
                         <div id="individual-student" class="selection-controls">
                             <select id="printStudentSelect" class="dropdown">
-                                <option value="">Choose a student group...</option>
+                                <option value="" data-i18n-placeholder="dropdown.chooseStudent">اختر مجموعة تلاميذ
+                                </option>
                             </select>
                         </div>
 
@@ -1015,24 +1030,27 @@
                             <div class="checkbox-list" id="studentCheckboxList"></div>
                         </div>
 
-                        <button onclick="timetableViewer.printTimetables('student')" class="print-btn">🖨️ Print
+                        <button onclick="timetableViewer.printTimetables('student')" class="print-btn"
+                            data-i18n="print.students">🖨️ Print
                             Students</button>
                     </div>
                 </div>
 
                 <div class="print-section">
-                    <h4>🏫 Rooms</h4>
+                    <h4 data-i18n="print.rooms">🏫 Rooms</h4>
                     <div class="print-controls">
                         <div class="selection-type">
-                            <label><input type="radio" name="room-selection" value="individual" checked> Individual
-                                Room</label>
-                            <label><input type="radio" name="room-selection" value="selected"> Selected Rooms</label>
-                            <label><input type="radio" name="room-selection" value="all"> All Rooms</label>
+                            <label><input type="radio" name="room-selection" value="individual" checked> <span
+                                    data-i18n="radio.roomIndividual">Individual Room</span></label>
+                            <label><input type="radio" name="room-selection" value="selected"> <span
+                                    data-i18n="radio.roomSelected">Selected Rooms</span></label>
+                            <label><input type="radio" name="room-selection" value="all"> <span
+                                    data-i18n="radio.roomAll">All Rooms</span></label>
                         </div>
 
                         <div id="individual-room" class="selection-controls">
                             <select id="printRoomSelect" class="dropdown">
-                                <option value="">Choose a room...</option>
+                                <option value="" data-i18n-placeholder="dropdown.chooseRoom">Choose a room...</option>
                             </select>
                         </div>
 
@@ -1040,14 +1058,16 @@
                             <div class="checkbox-list" id="roomCheckboxList"></div>
                         </div>
 
-                        <button onclick="timetableViewer.printTimetables('room')" class="print-btn">🖨️ Print
+                        <button onclick="timetableViewer.printTimetables('room')" class="print-btn"
+                            data-i18n="print.rooms">🖨️ Print
                             Rooms</button>
                     </div>
                 </div>
 
                 <div class="print-section">
-                    <h4>📄 Print All</h4>
-                    <button onclick="timetableViewer.printAllTimetables()" class="print-btn print-all">🖨️ Print
+                    <h4 data-i18n="print.title">📄 Print All</h4>
+                    <button onclick="timetableViewer.printAllTimetables()" class="print-btn print-all"
+                        data-i18n="print.saveAll">🖨️ Print
                         Everything (Teachers + Students + Rooms)</button>
                 </div>
             </div>
@@ -1055,6 +1075,155 @@
     </div>
 
     <script>
+        // In-file translations for English, French and Arabic
+        const TRANSLATIONS = {
+            en: {
+                header: { title: '📚 FET Timetable Viewer', subtitle: 'Import and view timetables for Teachers, Students, and Rooms' },
+                tabs: { teachers: '👨‍🏫 Teachers', students: '👥 Students', rooms: '🏫 Rooms', print: '🖨️ Print/PDF', settings: '⚙️ Settings', appearance: '🎨 Appearance', data: '💾 Data Management' },
+                dropdown: { selectTeacher: 'Select Teacher:', chooseTeacher: 'Choose a teacher...', selectStudent: 'Select Student Group:', chooseStudent: 'Choose a student group...', selectRoom: 'Select Room:', chooseRoom: 'Choose a room...' },
+                radio: {
+                    teacherIndividual: 'Individual Teacher',
+                    teacherSelected: 'Selected Teachers',
+                    teacherAll: 'All Teachers',
+                    studentIndividual: 'Individual Student Group',
+                    studentSelected: 'Selected Groups',
+                    studentAll: 'All Student Groups',
+                    roomIndividual: 'Individual Room',
+                    roomSelected: 'Selected Rooms',
+                    roomAll: 'All Rooms'
+                },
+
+                misc: {
+                    assignedClasses: 'Assigned Classes:',
+                    teachersBySubject: 'Teachers by Subject:',
+                    subjects: 'Subjects:',
+                    usedFor: 'Used for:',
+                    totalUsage: 'Total Usage:',
+                    totalHours: 'Total Hours:',
+                    teachersTable: 'Teachers Table',
+                    resetDefaults: '🔄 Reset to Defaults',
+                    exportSettings: '📤 Export Settings'
+                },
+                settings: { display: '🌐 Display Settings', textDirection: 'Text Direction:', language: 'Language:', ltr: 'LTR (Left to Right)', rtl: 'RTL (Right to Left)' },
+                timeSettings: { title: '📅 Time Settings', dayNames: 'Day Names:', hourFormat: 'Hour Format:' },
+                options: {
+                    original: 'Original (from file)',
+                    english: 'English',
+                    arabic: 'Arabic',
+                    french: 'French',
+                    custom: 'Custom',
+                    vertical: 'Days Vertical (recommended)',
+                    horizontal: 'Days Horizontal',
+                    '24h': '24 Hour',
+                    '12h': '12 Hour',
+                    period: 'Period'
+                },
+                helpers: {
+                    morningStart: 'Start hour for the morning session',
+                    afternoonStart: 'Start hour for the afternoon session',
+                    activityColorInfo: 'Activities use auto-generated colors: Students by Subject, Teachers by Class'
+                },
+                howto: { title: 'How to use:', step1: '1. Click "Select FET XML Files" button above', step2: '2. Navigate to your folder and select TimeTable.fet', step3: '3. The file will be processed and you can view timetables in the tabs below', dragdrop: 'Or drag and drop your files here' },
+                print: { title: 'Complete Timetable Report', instructions: 'Select what you want to print or save as PDF:', teachers: 'Teachers', students: 'Students', rooms: 'Rooms', timetables: 'Timetables', saveAll: 'Print Everything (Teachers + Students + Rooms)', noActivities: 'No activities scheduled.' },
+                buttons: { print: 'Print', savePdf: 'Save as PDF', upload: 'Select FET XML Files' }
+            },
+            fr: {
+                header: { title: '📚 Visionneuse d\'emploi du temps FET', subtitle: 'Importer et afficher les emplois du temps pour les enseignants, les élèves et les salles' },
+                tabs: { teachers: '👨‍🏫 Enseignants', students: '👥 Étudiants', rooms: '🏫 Salles', print: '🖨️ Imprimer/PDF', settings: '⚙️ Paramètres', appearance: '🎨 Apparence', data: '💾 Gestion des données' },
+                dropdown: { selectTeacher: 'Sélectionner un enseignant:', chooseTeacher: 'Choisir un enseignant...', selectStudent: 'Sélectionner un groupe d\'étudiants:', chooseStudent: 'Choisir un groupe...', selectRoom: 'Sélectionner une salle:', chooseRoom: 'Choisir une salle...' },
+                radio: {
+                    teacherIndividual: 'Enseignant individuel',
+                    teacherSelected: 'Enseignants sélectionnés',
+                    teacherAll: 'Tous les enseignants',
+                    studentIndividual: 'Groupe d\'étudiants individuel',
+                    studentSelected: 'Groupes sélectionnés',
+                    studentAll: 'Tous les groupes',
+                    roomIndividual: 'Salle individuelle',
+                    roomSelected: 'Salles sélectionnées',
+                    roomAll: 'Toutes les salles'
+                },
+
+                misc: {
+                    assignedClasses: 'Classes assignées :',
+                    teachersBySubject: 'Enseignants par matière :',
+                    subjects: 'Matières :',
+                    totalHours: 'Heures totales :',
+                    teachersTable: 'Tableau des enseignants',
+                    resetDefaults: '🔄 Réinitialiser',
+                    exportSettings: '📤 Exporter les paramètres'
+                },
+                settings: { display: '🌐 Paramètres d\'affichage', textDirection: 'Direction du texte:', language: 'Langue:', ltr: 'LTR (Gauche à droite)', rtl: 'RTL (Droite à gauche)' },
+                timeSettings: { title: '📅 Paramètres de temps', dayNames: 'Noms des jours:', hourFormat: 'Format des heures:' },
+                options: {
+                    original: 'Original (depuis le fichier)',
+                    english: 'Anglais',
+                    arabic: 'Arabe',
+                    french: 'Français',
+                    custom: 'Personnalisé',
+                    vertical: 'Jours verticaux (recommandé)',
+                    horizontal: 'Jours horizontaux',
+                    '24h': '24 heures',
+                    '12h': '12 heures',
+                    period: 'Période'
+                },
+                helpers: {
+                    morningStart: 'Heure de début de la session du matin',
+                    afternoonStart: 'Heure de début de la session de l\'après-midi',
+                    activityColorInfo: 'Les activités utilisent des couleurs générées automatiquement : étudiants par matière, enseignants par classe'
+                },
+                howto: { title: 'Comment utiliser :', step1: '1. Cliquez sur le bouton "Sélectionner les fichiers FET XML" ci-dessus', step2: '2. Naviguez vers votre dossier et sélectionnez TimeTable.fet', step3: '3. Le fichier sera traité et vous pourrez afficher les emplois du temps dans les onglets ci-dessous', dragdrop: 'أو اسحب وأسقط ملفاتك هنا' },
+                print: { title: 'Rapport complet des emplois du temps', instructions: 'Sélectionnez ce que vous souhaitez imprimer ou enregistrer en PDF :', teachers: 'Enseignants', students: 'Étudiants', rooms: 'Salles', timetables: 'Emplois du temps', saveAll: 'Imprimer tout (Enseignants + Étudiants + Salles)', noActivities: 'Aucune activité programmée.' },
+                buttons: { print: 'Imprimer', savePdf: 'Enregistrer en PDF', upload: 'Sélectionner des fichiers FET XML' }
+            },
+            ar: {
+                header: { title: '📚 عارض جداول FET', subtitle: 'استيراد وعرض جداول الأساتذة والتلاميذ والقاعات' },
+                tabs: { teachers: '👨‍🏫 الأساتذة', students: '👥 التلاميذ', rooms: '🏫 القاعات', print: '🖨️ طباعة/PDF', settings: '⚙️ الإعدادات', appearance: '🎨 المظهر', data: '💾 إدارة البيانات' },
+                dropdown: { selectTeacher: 'اختر المعلم:', chooseTeacher: 'أستاذ أو أساتذة', selectStudent: 'اختر مجموعة تلاميذ:', chooseStudent: 'اختر مجموعة...', selectRoom: 'اختر القاعة:', chooseRoom: 'اختر قاعة...' },
+                radio: {
+                    teacherIndividual: 'معلم فردي',
+                    teacherSelected: 'الأساتذة المحددون',
+                    teacherAll: 'جميع الأساتذة',
+                    studentIndividual: 'مجموعة تلاميذ فردية',
+                    studentSelected: 'المجموعات المحددة',
+                    studentAll: 'جميع المجموعات',
+                    roomIndividual: 'قاعة فردية',
+                    roomSelected: 'القاعات المحددة',
+                    roomAll: 'جميع القاعات'
+                },
+
+                misc: {
+                    assignedClasses: 'الأقسام المسندة',
+                    teachersBySubject: 'الأساتذة حسب المادة:',
+                    subjects: 'الأقسام',
+                    totalHours: 'إجمالي الساعات:',
+                    teachersTable: 'جدول الأساتذة',
+                    resetDefaults: '🔄 إعادة التعيين',
+                    exportSettings: '📤 تصدير الإعدادات'
+                },
+                settings: { display: '🌐 إعدادات العرض', textDirection: 'اتجاه النص:', language: 'اللغة:', ltr: 'LTR (من اليسار لليمين)', rtl: 'RTL (من اليمين لليسار)' },
+                timeSettings: { title: '📅 إعدادات الوقت', dayNames: 'أسماء الأيام:', hourFormat: 'تنسيق الساعة:' },
+                options: {
+                    original: 'الأصلي (من الملف)',
+                    english: 'الإنجليزية',
+                    arabic: 'العربية',
+                    french: 'الفرنسية',
+                    custom: 'مخصص',
+                    vertical: 'الأيام عمودية (موصى به)',
+                    horizontal: 'الأيام أفقية',
+                    '24h': '24 ساعة',
+                    '12h': '12 ساعة',
+                    period: 'الفترة'
+                },
+                helpers: {
+                    morningStart: 'ساعة بداية الفترة الصباحية',
+                    afternoonStart: 'ساعة بداية الفترة المسائية',
+                    activityColorInfo: 'تستخدم الأنشطة ألواناً مولدة تلقائياً: التلاميذ حسب المادة، الأساتذة حسب المجموعة'
+                },
+                howto: { title: 'كيفية الاستخدام:', step1: '1. اضغط زر "اختر ملفات FET XML" أعلاه', step2: '2. انتقل إلى مجلدك واختر TimeTable.fet', step3: '3. سيتم معالجة الملف ويمكنك عرض الجداول في الألسنة أدناه', dragdrop: 'أو اسحب وأسقط ملفاتك هنا' },
+                print: { title: 'تقرير الجدول الكامل', instructions: 'حدد ما تريد طباعته أو حفظه كـ PDF:', teachers: 'الأساتذة', students: 'التلاميذ', rooms: 'القاعات', timetables: 'جداول', saveAll: 'طباعة كل شيء (الأساتذة + التلاميذ + القاعات)', noActivities: 'لا توجد أنشطة مجدولة.' },
+                buttons: { print: 'طباعة', savePdf: 'حفظ كـ PDF', upload: 'اختر ملفات FET XML' }
+            }
+        };
         class TimetableViewer {
             constructor() {
                 console.log('TimetableViewer constructor called');
@@ -1093,6 +1262,22 @@
                 // Collator for natural (numeric-aware) sorting of names like "Salle 1", "Salle 10"
                 this.collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
+                // Internationalization helper
+                this.t = (key, vars) => {
+                    const lang = this.settings.language || 'en';
+                    const parts = key.split('.');
+                    let node = TRANSLATIONS[lang];
+                    for (const p of parts) {
+                        if (!node) break;
+                        node = node[p];
+                    }
+                    if (typeof node === 'undefined') return key;
+                    if (vars && typeof vars === 'object') {
+                        return Object.keys(vars).reduce((s, k) => s.replace(new RegExp('\{\{' + k + '\}\}', 'g'), vars[k]), node);
+                    }
+                    return node;
+                };
+
                 // Day name translations
                 this.translations = {
                     days: {
@@ -1117,6 +1302,9 @@
                 }
 
                 this.initEventListeners();
+
+                // Apply translations now that i18n helper exists
+                try { this.applyTranslations(); } catch (e) { console.error('applyTranslations failed at init:', e); }
 
                 // Auto-load last imported file after a short delay to ensure DOM is ready
                 setTimeout(() => {
@@ -1373,6 +1561,21 @@
                     this.toggleRTL(e.target.checked);
                     this.saveSettings();
                 });
+
+                // Language select
+                const langSelect = document.getElementById('languageSelect');
+                if (langSelect) {
+                    langSelect.addEventListener('change', (e) => {
+                        this.settings.language = e.target.value;
+                        try {
+                            localStorage.setItem('fvet_language', this.settings.language);
+                        } catch (err) {
+                            console.error('Error saving language to localStorage', err);
+                        }
+                        this.saveSettings();
+                        this.applyTranslations();
+                    });
+                }
 
                 document.getElementById('dayNamesFormat').addEventListener('change', (e) => {
                     this.settings.dayNamesFormat = e.target.value;
@@ -1873,7 +2076,7 @@
                 }
 
                 console.log(`Populating ${this.data.teachers.size} teachers`);
-                teacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
+                teacherSelect.innerHTML = '<option value="" data-i18n-placeholder="dropdown.chooseTeacher">Choose a teacher...</option>';
                 // Group teachers by subject and render optgroups
                 const grouped = this.getTeachersGroupedBySubject();
                 Array.from(grouped.keys()).sort(this.collator.compare).forEach(subject => {
@@ -1899,7 +2102,7 @@
                 const allStudentGroups = this.getAllStudentGroups();
 
                 console.log(`Populating ${allStudentGroups.size} student groups (including subgroups)`);
-                studentSelect.innerHTML = '<option value="">Choose a student group...</option>';
+                studentSelect.innerHTML = '<option value="" data-i18n-placeholder="dropdown.chooseStudent"></option>';
                 Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
                     const option = document.createElement('option');
                     option.value = student;
@@ -1915,7 +2118,7 @@
                 }
 
                 console.log(`Populating ${this.data.rooms.size} rooms`);
-                roomSelect.innerHTML = '<option value="">Choose a room...</option>';
+                roomSelect.innerHTML = '<option value="" data-i18n-placeholder="dropdown.chooseRoom">Choose a room...</option>';
                 Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
                     const option = document.createElement('option');
                     option.value = room;
@@ -1930,13 +2133,15 @@
 
                 // Populate print dropdowns
                 this.populatePrintDropdowns();
+                // Apply translations to newly created option elements
+                try { this.applyTranslations(); } catch (e) { console.error('applyTranslations after populateDropdowns failed', e); }
             }
 
             populatePrintDropdowns() {
                 // Populate print teacher dropdown
                 const printTeacherSelect = document.getElementById('printTeacherSelect');
                 if (printTeacherSelect) {
-                    printTeacherSelect.innerHTML = '<option value="">Choose a teacher...</option>';
+                    printTeacherSelect.innerHTML = '<option value="" data-i18n-placeholder="dropdown.chooseTeacher">Choose a teacher...</option>';
                     Array.from(this.data.teachers.keys()).sort(this.teacherSubjectNameComparator.bind(this)).forEach(teacher => {
                         const option = document.createElement('option');
                         option.value = teacher;
@@ -1949,7 +2154,7 @@
                 const printStudentSelect = document.getElementById('printStudentSelect');
                 if (printStudentSelect) {
                     const allStudentGroups = this.getAllStudentGroups();
-                    printStudentSelect.innerHTML = '<option value="">Choose a student group...</option>';
+                    printStudentSelect.innerHTML = '<option value="" data-i18n-placeholder="dropdown.chooseStudent"></option>';
                     Array.from(allStudentGroups).sort(this.collator.compare).forEach(student => {
                         const option = document.createElement('option');
                         option.value = student;
@@ -1961,7 +2166,7 @@
                 // Populate print room dropdown
                 const printRoomSelect = document.getElementById('printRoomSelect');
                 if (printRoomSelect) {
-                    printRoomSelect.innerHTML = '<option value="">Choose a room...</option>';
+                    printRoomSelect.innerHTML = '<option value="" data-i18n-placeholder="dropdown.chooseRoom">Choose a room...</option>';
                     Array.from(this.data.rooms.keys()).sort(this.collator.compare).forEach(room => {
                         const option = document.createElement('option');
                         option.value = room;
@@ -1972,6 +2177,8 @@
 
                 // Create checkbox lists for multiple selection
                 this.createCheckboxLists();
+                // Apply translations to newly created option elements in print dropdowns
+                try { this.applyTranslations(); } catch (e) { console.error('applyTranslations after populatePrintDropdowns failed', e); }
             }
 
             createCheckboxLists() {
@@ -2118,9 +2325,9 @@
 
                 if (type === 'all') {
                     // Print all types
-                    html += '<h1>Complete Timetable Report</h1>';
+                    html += `<h1>${this.t ? this.t('print.title') : 'Complete Timetable Report'}</h1>`;
 
-                    html += '<h2>Teachers</h2>';
+                    html += `<h2>${this.t ? this.t('print.teachers') : 'Teachers'}</h2>`;
                     entities.teachers.forEach(teacher => {
                         html += '<div class="teacher-section">';
                         const teacherActivities = this.data.activities.filter(a => a.teacher === teacher);
@@ -2129,8 +2336,8 @@
 
                         html += `<div class="teacher-info">`;
                         html += `<h3>${teacher}</h3>`;
-                        html += `<div class="subjects-list"><strong>Subjects:</strong> ${subjects.join(', ')}</div>`;
-                        html += `<div class="total-hours"><strong>Total Hours:</strong> ${totalHours}h</div>`;
+                        html += `<div class="subjects-list"><strong>${this.t ? this.t('misc.subjects') : 'Subjects:'}</strong> ${subjects.join(', ')}</div>`;
+                        html += `<div class="total-hours"><strong>${this.t ? this.t('misc.totalHours') : 'Total Hours:'}</strong> ${totalHours}h</div>`;
                         html += `</div>`;
                         html += this.generateTimetable(teacherActivities, 'teacher', teacher);
                         html += '</div>';
@@ -2140,7 +2347,7 @@
                     html += '<div style="page-break-before: always;"></div>';
 
                     // Teachers table: subjects -> teachers (printed on its own page)
-                    html += '<h2>Teachers Table</h2>';
+                    html += `<h2>${this.t ? this.t('misc.teachersTable') : 'Teachers Table'}</h2>`;
                     html += '<div class="teacher-section">';
                     // Build subject -> teachers map
                     const subjMap = {};
@@ -2171,7 +2378,7 @@
                     html += '</div>';
 
                     // Now start Students section
-                    html += '<h2>Students</h2>';
+                    html += `<h2>${this.t ? this.t('print.students') : 'Students'}</h2>`;
                     entities.students.forEach(student => {
                         html += '<div class="teacher-section">';
                         const studentActivities = this.getStudentAndSubgroupActivities(student);
@@ -2185,7 +2392,7 @@
                         html += '</div>';
                     });
 
-                    html += '<h2>Rooms</h2>';
+                    html += `<h2>${this.t ? this.t('print.rooms') : 'Rooms'}</h2>`;
                     entities.rooms.forEach(room => {
                         html += '<div class="teacher-section">';
                         const roomActivities = this.data.activities.filter(a => a.room === room);
@@ -2194,15 +2401,17 @@
 
                         html += `<div class="teacher-info">`;
                         html += `<h3>${room}</h3>`;
-                        html += `<div class="subjects-list"><strong>Used for:</strong> ${subjects.join(', ')}</div>`;
-                        html += `<div class="total-hours"><strong>Total Usage:</strong> ${totalHours}h</div>`;
+                        html += `<div class="subjects-list"><strong>${this.t ? this.t('misc.usedFor') : 'Used for:'}</strong> ${subjects.join(', ')}</div>`;
+                        html += `<div class="total-hours"><strong>${this.t ? this.t('misc.totalUsage') : 'Total Usage:'}</strong> ${totalHours}h</div>`;
                         html += `</div>`;
                         html += this.generateTimetable(roomActivities, 'room', room);
                         html += '</div>';
                     });
                 } else {
                     // Print single type
-                    html += `<h1>${type.charAt(0).toUpperCase() + type.slice(1)} Timetables</h1>`;
+                    const typeLabel = this.t ? this.t(`print.${type}`) : (type.charAt(0).toUpperCase() + type.slice(1));
+                    const timetablesLabel = this.t ? this.t('print.timetables') : 'Timetables';
+                    html += `<h1>${typeLabel} ${timetablesLabel}</h1>`;
                     entities.forEach(entity => {
                         html += '<div class="teacher-section">';
                         let entityActivities = [];
@@ -2221,13 +2430,13 @@
                         html += `<div class="teacher-info">`;
                         html += `<h3>${entity}</h3>`;
                         if (type === 'teacher') {
-                            html += `<div class="subjects-list"><strong>Subjects:</strong> ${subjects.join(', ')}</div>`;
-                            html += `<div class="total-hours"><strong>Total Hours:</strong> ${totalHours}h</div>`;
+                            html += `<div class="subjects-list"><strong>${this.t ? this.t('misc.subjects') : 'Subjects:'}</strong> ${subjects.join(', ')}</div>`;
+                            html += `<div class="total-hours"><strong>${this.t ? this.t('misc.totalHours') : 'Total Hours:'}</strong> ${totalHours}h</div>`;
                         } else if (type === 'student') {
-                            html += `<div class="subjects-list"><strong>Subjects:</strong> ${subjects.join(', ')}</div>`;
+                            html += `<div class="subjects-list"><strong>${this.t ? this.t('misc.subjects') : 'Subjects:'}</strong> ${subjects.join(', ')}</div>`;
                         } else if (type === 'room') {
-                            html += `<div class="subjects-list"><strong>Used for:</strong> ${subjects.join(', ')}</div>`;
-                            html += `<div class="total-hours"><strong>Total Usage:</strong> ${totalHours}h</div>`;
+                            html += `<div class="subjects-list"><strong>${this.t ? this.t('misc.usedFor') : 'Used for:'}</strong> ${subjects.join(', ')}</div>`;
+                            html += `<div class="total-hours"><strong>${this.t ? this.t('misc.totalUsage') : 'Total Usage:'}</strong> ${totalHours}h</div>`;
                         }
                         html += `</div>`;
                         html += this.generateTimetable(entityActivities, type, entity);
@@ -2651,7 +2860,7 @@
                     const assignedClasses = [...new Set(teacherActivities.map(a => a.students))];
                     if (assignedClasses.length > 0) {
                         html += `<div class="assigned-classes">
-                            <h4>Assigned Classes:</h4>
+                            <h4>${this.t ? this.t('misc.assignedClasses') : 'Assigned Classes:'}</h4>
                             <div class="classes-list">${assignedClasses.join(', ')}</div>
                         </div>`;
                     }
@@ -2673,7 +2882,7 @@
 
                     if (Object.keys(subjectTeachers).length > 0) {
                         html += `<div class="subject-teachers">
-                            <h4>Teachers by Subject:</h4>
+                            <h4>${this.t ? this.t('misc.teachersBySubject') : 'Teachers by Subject:'}</h4>
                             <table class="teachers-table">`;
 
                         const entries = Object.entries(subjectTeachers);
@@ -3153,8 +3362,6 @@
                 this.refreshCurrentTimetable();
             }
 
-
-
             loadSettings() {
                 try {
                     const saved = localStorage.getItem('fetTimetableSettings');
@@ -3186,6 +3393,12 @@
                         document.getElementById('hourFormat').value = this.settings.hourFormat;
                         document.getElementById('tableLayout').value = this.settings.tableLayout;
                         document.getElementById('activityColor').value = this.settings.activityColor;
+                        // set language select
+                        const langSelectEl = document.getElementById('languageSelect');
+                        if (langSelectEl) langSelectEl.value = this.settings.language || 'en';
+                        // Set RTL label text if exists
+                        const rtlLabel = document.getElementById('rtlLabel');
+                        if (rtlLabel) rtlLabel.textContent = this.settings.rtl ? (this.t ? this.t('settings.rtl') : 'RTL') : (this.t ? this.t('settings.ltr') : 'LTR');
                         if (typeof this.settings.morningStart !== 'undefined') {
                             document.getElementById('morningStart').value = this.settings.morningStart;
                         }
@@ -3195,6 +3408,8 @@
 
                         this.toggleRTL(this.settings.rtl);
                         this.createCustomInputs();
+                        // Apply translations after applying settings
+                        this.applyTranslations();
                     } catch (e) {
                         console.error('Error applying settings to UI:', e);
                     }
@@ -3285,6 +3500,101 @@
                     const info = document.querySelector('.info-panel');
                     if (info) info.remove();
                 }, 5000);
+            }
+
+            // Apply translations to elements marked with data-i18n and data-i18n-placeholder
+            applyTranslations() {
+                try {
+                    const lang = this.settings.language || 'en';
+                    // Toggle dir for Arabic automatically
+                    if (lang === 'ar') {
+                        document.documentElement.setAttribute('dir', 'rtl');
+                        document.body.classList.add('rtl');
+                        document.body.classList.remove('ltr');
+                    } else {
+                        document.documentElement.setAttribute('dir', 'ltr');
+                        document.body.classList.add('ltr');
+                        document.body.classList.remove('rtl');
+                    }
+
+                    document.querySelectorAll('[data-i18n]').forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        const text = this.t ? this.t(key) : key;
+                        if (el.tagName.toLowerCase() === 'input' || el.tagName.toLowerCase() === 'textarea') {
+                            el.value = text;
+                        } else {
+                            el.textContent = text;
+                        }
+                    });
+
+                    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                        const key = el.getAttribute('data-i18n-placeholder');
+                        const text = this.t ? this.t(key) : key;
+                        // if it's an option element, set its textContent, otherwise set placeholder
+                        if (el.tagName.toLowerCase() === 'option') {
+                            el.textContent = text;
+                        } else {
+                            el.setAttribute('placeholder', text);
+                        }
+                    });
+
+                    // Update RTL label string
+                    const rtlLabel = document.getElementById('rtlLabel');
+                    if (rtlLabel) rtlLabel.textContent = this.settings.rtl ? this.t('settings.rtl') : this.t('settings.ltr');
+
+                    // Update tab labels
+                    const tabs = document.querySelectorAll('.tab');
+                    tabs.forEach(tab => {
+                        const key = tab.dataset.tab;
+                        if (key && this.t) {
+                            const trans = this.t('tabs.' + key);
+                            if (trans) tab.textContent = trans;
+                        }
+                    });
+
+                    // Update header
+                    const h1 = document.querySelector('.header h1');
+                    const p = document.querySelector('.header p');
+                    if (h1) h1.textContent = this.t('header.title');
+                    if (p) p.textContent = this.t('header.subtitle');
+
+                    // Update file input label
+                    const fileLabel = document.querySelector('.file-input-label');
+                    if (fileLabel) fileLabel.textContent = this.t('buttons.upload');
+
+                    // Update how-to block
+                    document.querySelectorAll('[data-i18n-howto]').forEach((el, idx) => {
+                        const text = this.t('howto.step' + (idx + 1));
+                        if (text) el.textContent = text;
+                    });
+
+                    // Update dropdown labels and option placeholders
+                    const teacherLabel = document.querySelector('label[for="teacherSelect"]');
+                    if (teacherLabel) teacherLabel.textContent = this.t('dropdown.selectTeacher');
+                    const studentLabel = document.querySelector('label[for="studentSelect"]');
+                    if (studentLabel) studentLabel.textContent = this.t('dropdown.selectStudent');
+                    const roomLabel = document.querySelector('label[for="roomSelect"]');
+                    if (roomLabel) roomLabel.textContent = this.t('dropdown.selectRoom');
+
+                    const teacherSelect = document.getElementById('teacherSelect');
+                    if (teacherSelect) {
+                        const first = teacherSelect.querySelector('option');
+                        if (first) first.textContent = this.t('dropdown.chooseTeacher');
+                    }
+                    const studentSelect = document.getElementById('studentSelect');
+                    if (studentSelect) {
+                        const first = studentSelect.querySelector('option');
+                        if (first) first.textContent = this.t('dropdown.chooseStudent');
+                    }
+                    const roomSelect = document.getElementById('roomSelect');
+                    if (roomSelect) {
+                        const first = roomSelect.querySelector('option');
+                        if (first) first.textContent = this.t('dropdown.chooseRoom');
+                    }
+
+                } catch (err) {
+                    console.error('Error applying translations:', err);
+                }
             }
         }
 
