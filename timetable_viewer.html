@@ -5,6 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FET Timetable Viewer</title>
+    <!-- Tabler Icons for consistent iconography (correct CDN path) -->
+    <!-- Tabler Icons stylesheet with correct Subresource Integrity -->
+    <link rel="stylesheet" href="https://unpkg.com/@tabler/icons-webfont@2.47.0/tabler-icons.min.css"
+        integrity="sha384-PwEnNZvp50/uDLtKrd1s2D4Xe/y+fCVtEigigjik/PgHlDXUF1uJ32m7guk/XWYV" crossorigin="anonymous">
+    <!-- jsDelivr alternative:
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" crossorigin="anonymous"> -->
+    <noscript>
+        <style>
+            .ti {
+                display: none !important
+            }
+        </style>
+    </noscript>
     <style>
         * {
             margin: 0;
@@ -790,7 +803,7 @@
 
 <body>
     <div class="header">
-        <h1 data-i18n="header.title">📚 FET Timetable Viewer</h1>
+        <h1 data-i18n="header.title"><i class="ti ti-book-2" aria-hidden="true"></i> FET Timetable Viewer</h1>
         <p data-i18n="header.subtitle">Import and view timetables for Teachers, Students, and Rooms</p>
     </div>
 
@@ -798,12 +811,13 @@
         <div class="file-upload-area" id="fileDropArea">
             <label class="file-input-wrapper" for="xmlFile">
                 <input type="file" id="xmlFile" accept=".fet,.xml,text/xml,application/xml" multiple>
-                <span class="file-input-label" data-i18n="buttons.upload">📁 Select FET XML Files</span>
+                <span class="file-input-label" data-i18n="buttons.upload"><i class="ti ti-folder-open"
+                        aria-hidden="true"></i> Select FET XML Files</span>
             </label>
             <p style="margin-top: 15px; color: #666;" data-i18n="howto.dragdrop">Or drag and drop your files here</p>
             <div
                 style="margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; font-size: 14px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                💡 <strong data-i18n="howto.title">How to use:</strong><br>
+                <i class="ti ti-bulb" aria-hidden="true"></i> <strong data-i18n="howto.title">How to use:</strong><br>
                 <div data-i18n-howto>1. Click "Select FET XML Files" button above</div>
                 <div data-i18n-howto>2. Navigate to your folder and select <code>TimeTable.fet</code></div>
                 <div data-i18n-howto>3. The file will be processed and you can view timetables in the tabs below</div>
@@ -823,11 +837,16 @@
     </div>
 
     <div class="tabs">
-        <button class="tab active" data-tab="teachers" data-i18n="tabs.teachers">👨‍🏫 Teachers</button>
-        <button class="tab" data-tab="students" data-i18n="tabs.students">👥 Students</button>
-        <button class="tab" data-tab="rooms" data-i18n="tabs.rooms">🏫 Rooms</button>
-        <button class="tab" data-tab="print" data-i18n="tabs.print">🖨️ Print/PDF</button>
-        <button class="tab" data-tab="settings" data-i18n="tabs.settings">⚙️ Settings</button>
+        <button class="tab active" data-tab="teachers" data-i18n="tabs.teachers"><i class="ti ti-chalkboard"
+                aria-hidden="true"></i> Teachers</button>
+        <button class="tab" data-tab="students" data-i18n="tabs.students"><i class="ti ti-users-group"
+                aria-hidden="true"></i> Students</button>
+        <button class="tab" data-tab="rooms" data-i18n="tabs.rooms"><i class="ti ti-building" aria-hidden="true"></i>
+            Rooms</button>
+        <button class="tab" data-tab="print" data-i18n="tabs.print"><i class="ti ti-printer" aria-hidden="true"></i>
+            Print/PDF</button>
+        <button class="tab" data-tab="settings" data-i18n="tabs.settings"><i class="ti ti-settings"
+                aria-hidden="true"></i> Settings</button>
     </div>
 
     <div class="content-wrapper">
@@ -927,17 +946,19 @@
                             session</small>
                     </div>
                     <div class="settings-section">
-                        <h3 data-i18n="timeSettings.dayNames">📝 Custom Day Names</h3>
+                        <h3 data-i18n="timeSettings.dayNames"><i class="ti ti-calendar-stats" aria-hidden="true"></i>
+                            Custom Day Names</h3>
                         <div id="dayNamesInputs" class="custom-inputs-grid"></div>
                     </div>
                     <div class="settings-section">
-                        <h3 data-i18n="timeSettings.hourFormat">🕐 Custom Hour Names</h3>
+                        <h3 data-i18n="timeSettings.hourFormat"><i class="ti ti-clock" aria-hidden="true"></i> Custom
+                            Hour Names</h3>
                         <div id="hourNamesInputs" class="custom-inputs-grid"></div>
                     </div>
                 </div>
 
                 <div class="settings-section">
-                    <h3 data-i18n="tabs.appearance">🎨 Appearance</h3>
+                    <h3 data-i18n="tabs.appearance"><i class="ti ti-palette" aria-hidden="true"></i> Appearance</h3>
                     <div class="setting-item">
                         <label data-i18n-placeholder="options.tableLayout">Table Layout:</label>
                         <select id="tableLayout">
@@ -958,15 +979,17 @@
                 </div>
 
                 <div class="settings-section">
-                    <h3 data-i18n="tabs.data">💾 Data Management</h3>
+                    <h3 data-i18n="tabs.data"><i class="ti ti-database" aria-hidden="true"></i> Data Management</h3>
                     <div class="setting-item">
                         <button id="resetSettings"
                             style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            <span data-i18n="misc.resetDefaults">🔄 Reset to Defaults</span>
+                            <span data-i18n="misc.resetDefaults"><i class="ti ti-refresh" aria-hidden="true"></i> Reset
+                                to Defaults</span>
                         </button>
                         <button id="exportSettings"
                             style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            <span data-i18n="misc.exportSettings">📤 Export Settings</span>
+                            <span data-i18n="misc.exportSettings"><i class="ti ti-upload" aria-hidden="true"></i> Export
+                                Settings</span>
                         </button>
                     </div>
                 </div>
@@ -975,11 +998,11 @@
 
         <div id="print-content" class="tab-content">
             <div class="print-options">
-                <h3 data-i18n="tabs.print">🖨️ Print & Save as PDF</h3>
+                <h3 data-i18n="tabs.print"><i class="ti ti-printer" aria-hidden="true"></i> Print & Save as PDF</h3>
                 <p data-i18n="print.instructions">Select what you want to print or save as PDF:</p>
 
                 <div class="print-section">
-                    <h4 data-i18n="print.teachers">👨‍🏫 Teachers</h4>
+                    <h4 data-i18n="print.teachers"><i class="ti ti-chalkboard" aria-hidden="true"></i> Teachers</h4>
                     <div class="print-controls">
                         <div class="selection-type">
                             <label><input type="radio" name="teacher-selection" value="individual" checked> <span
@@ -1002,13 +1025,13 @@
                         </div>
 
                         <button onclick="timetableViewer.printTimetables('teacher')" class="print-btn"
-                            data-i18n="print.teachers">🖨️ Print
+                            data-i18n="print.teachers"><i class="ti ti-printer" aria-hidden="true"></i> Print
                             Teachers</button>
                     </div>
                 </div>
 
                 <div class="print-section">
-                    <h4 data-i18n="print.students">👥 Students</h4>
+                    <h4 data-i18n="print.students"><i class="ti ti-users-group" aria-hidden="true"></i> Students</h4>
                     <div class="print-controls">
                         <div class="selection-type">
                             <label><input type="radio" name="student-selection" value="individual" checked> <span
@@ -1031,13 +1054,13 @@
                         </div>
 
                         <button onclick="timetableViewer.printTimetables('student')" class="print-btn"
-                            data-i18n="print.students">🖨️ Print
+                            data-i18n="print.students"><i class="ti ti-printer" aria-hidden="true"></i> Print
                             Students</button>
                     </div>
                 </div>
 
                 <div class="print-section">
-                    <h4 data-i18n="print.rooms">🏫 Rooms</h4>
+                    <h4 data-i18n="print.rooms"><i class="ti ti-building" aria-hidden="true"></i> Rooms</h4>
                     <div class="print-controls">
                         <div class="selection-type">
                             <label><input type="radio" name="room-selection" value="individual" checked> <span
@@ -1059,16 +1082,16 @@
                         </div>
 
                         <button onclick="timetableViewer.printTimetables('room')" class="print-btn"
-                            data-i18n="print.rooms">🖨️ Print
+                            data-i18n="print.rooms"><i class="ti ti-printer" aria-hidden="true"></i> Print
                             Rooms</button>
                     </div>
                 </div>
 
                 <div class="print-section">
-                    <h4 data-i18n="print.title">📄 Print All</h4>
+                    <h4 data-i18n="print.title"><i class="ti ti-report" aria-hidden="true"></i> Print All</h4>
                     <button onclick="timetableViewer.printAllTimetables()" class="print-btn print-all"
-                        data-i18n="print.saveAll">🖨️ Print
-                        Everything (Teachers + Students + Rooms)</button>
+                        data-i18n="print.saveAll"><i class="ti ti-printer" aria-hidden="true"></i> Print Everything
+                        (Teachers + Students + Rooms)</button>
                 </div>
             </div>
         </div>
@@ -1078,8 +1101,8 @@
         // In-file translations for English, French and Arabic
         const TRANSLATIONS = {
             en: {
-                header: { title: '📚 FET Timetable Viewer', subtitle: 'Import and view timetables for Teachers, Students, and Rooms' },
-                tabs: { teachers: '👨‍🏫 Teachers', students: '👥 Students', rooms: '🏫 Rooms', print: '🖨️ Print/PDF', settings: '⚙️ Settings', appearance: '🎨 Appearance', data: '💾 Data Management' },
+                header: { title: 'FET Timetable Viewer', subtitle: 'Import and view timetables for Teachers, Students, and Rooms' },
+                tabs: { teachers: 'Teachers', students: 'Students', rooms: 'Rooms', print: 'Print/PDF', settings: 'Settings', appearance: 'Appearance', data: 'Data Management' },
                 dropdown: { selectTeacher: 'Select Teacher:', chooseTeacher: 'Choose a teacher...', selectStudent: 'Select Student Group:', chooseStudent: 'Choose a student group...', selectRoom: 'Select Room:', chooseRoom: 'Choose a room...' },
                 radio: {
                     teacherIndividual: 'Individual Teacher',
@@ -1101,8 +1124,8 @@
                     totalUsage: 'Total Usage:',
                     totalHours: 'Total Hours:',
                     teachersTable: 'Teachers Table',
-                    resetDefaults: '🔄 Reset to Defaults',
-                    exportSettings: '📤 Export Settings'
+                    resetDefaults: 'Reset to Defaults',
+                    exportSettings: 'Export Settings'
                 },
                 settings: { display: '🌐 Display Settings', textDirection: 'Text Direction:', language: 'Language:', ltr: 'LTR (Left to Right)', rtl: 'RTL (Right to Left)' },
                 timeSettings: { title: '📅 Time Settings', dayNames: 'Day Names:', hourFormat: 'Hour Format:' },
@@ -1128,8 +1151,8 @@
                 buttons: { print: 'Print', savePdf: 'Save as PDF', upload: 'Select FET XML Files' }
             },
             fr: {
-                header: { title: '📚 Visionneuse d\'emploi du temps FET', subtitle: 'Importer et afficher les emplois du temps pour les enseignants, les élèves et les salles' },
-                tabs: { teachers: '👨‍🏫 Enseignants', students: '👥 Étudiants', rooms: '🏫 Salles', print: '🖨️ Imprimer/PDF', settings: '⚙️ Paramètres', appearance: '🎨 Apparence', data: '💾 Gestion des données' },
+                header: { title: 'Visionneuse d\'emploi du temps FET', subtitle: 'Importer et afficher les emplois du temps pour les enseignants, les élèves et les salles' },
+                tabs: { teachers: 'Enseignants', students: 'Étudiants', rooms: 'Salles', print: 'Imprimer/PDF', settings: 'Paramètres', appearance: 'Apparence', data: 'Gestion des données' },
                 dropdown: { selectTeacher: 'Sélectionner un enseignant:', chooseTeacher: 'Choisir un enseignant...', selectStudent: 'Sélectionner un groupe d\'étudiants:', chooseStudent: 'Choisir un groupe...', selectRoom: 'Sélectionner une salle:', chooseRoom: 'Choisir une salle...' },
                 radio: {
                     teacherIndividual: 'Enseignant individuel',
@@ -1149,8 +1172,8 @@
                     subjects: 'Matières :',
                     totalHours: 'Heures totales :',
                     teachersTable: 'Tableau des enseignants',
-                    resetDefaults: '🔄 Réinitialiser',
-                    exportSettings: '📤 Exporter les paramètres'
+                    resetDefaults: 'Réinitialiser',
+                    exportSettings: 'Exporter les paramètres'
                 },
                 settings: { display: '🌐 Paramètres d\'affichage', textDirection: 'Direction du texte:', language: 'Langue:', ltr: 'LTR (Gauche à droite)', rtl: 'RTL (Droite à gauche)' },
                 timeSettings: { title: '📅 Paramètres de temps', dayNames: 'Noms des jours:', hourFormat: 'Format des heures:' },
@@ -1176,8 +1199,8 @@
                 buttons: { print: 'Imprimer', savePdf: 'Enregistrer en PDF', upload: 'Sélectionner des fichiers FET XML' }
             },
             ar: {
-                header: { title: '📚 عارض جداول FET', subtitle: 'استيراد وعرض جداول الأساتذة والتلاميذ والقاعات' },
-                tabs: { teachers: '👨‍🏫 الأساتذة', students: '👥 التلاميذ', rooms: '🏫 القاعات', print: '🖨️ طباعة/PDF', settings: '⚙️ الإعدادات', appearance: '🎨 المظهر', data: '💾 إدارة البيانات' },
+                header: { title: 'عارض جداول FET', subtitle: 'استيراد وعرض جداول الأساتذة والتلاميذ والقاعات' },
+                tabs: { teachers: 'الأساتذة', students: 'التلاميذ', rooms: 'القاعات', print: 'طباعة/PDF', settings: 'الإعدادات', appearance: 'المظهر', data: 'إدارة البيانات' },
                 dropdown: { selectTeacher: 'اختر المعلم:', chooseTeacher: 'أستاذ أو أساتذة', selectStudent: 'اختر مجموعة تلاميذ:', chooseStudent: 'اختر مجموعة...', selectRoom: 'اختر القاعة:', chooseRoom: 'اختر قاعة...' },
                 radio: {
                     teacherIndividual: 'معلم فردي',
@@ -1197,8 +1220,8 @@
                     subjects: 'الأقسام',
                     totalHours: 'إجمالي الساعات:',
                     teachersTable: 'جدول الأساتذة',
-                    resetDefaults: '🔄 إعادة التعيين',
-                    exportSettings: '📤 تصدير الإعدادات'
+                    resetDefaults: 'إعادة التعيين',
+                    exportSettings: 'تصدير الإعدادات'
                 },
                 settings: { display: '🌐 إعدادات العرض', textDirection: 'اتجاه النص:', language: 'اللغة:', ltr: 'LTR (من اليسار لليمين)', rtl: 'RTL (من اليمين لليسار)' },
                 timeSettings: { title: '📅 إعدادات الوقت', dayNames: 'أسماء الأيام:', hourFormat: 'تنسيق الساعة:' },
@@ -1820,7 +1843,7 @@
                         console.log('Auto-loading last imported file:', lastFile.name);
                         await this.parseXML(lastFile.content, lastFile.name);
                         this.populateDropdowns();
-                        this.updateFileStatus(`🔄 Auto-loaded: ${lastFile.name}`, 'success');
+                        this.updateFileStatus(`Auto-loaded: ${lastFile.name}`, 'success');
                         return true;
                     } catch (error) {
                         console.warn('Could not auto-load last file:', error);
@@ -3520,8 +3543,20 @@
                     document.querySelectorAll('[data-i18n]').forEach(el => {
                         const key = el.getAttribute('data-i18n');
                         const text = this.t ? this.t(key) : key;
-                        if (el.tagName.toLowerCase() === 'input' || el.tagName.toLowerCase() === 'textarea') {
+                        const tag = el.tagName.toLowerCase();
+                        if (tag === 'input' || tag === 'textarea') {
                             el.value = text;
+                            return;
+                        }
+                        // Preserve leading icon elements (Tabler icons) if present
+                        const icon = el.querySelector(':scope > i.ti');
+                        if (icon) {
+                            // Remove all non-icon children
+                            Array.from(el.childNodes).forEach(n => {
+                                if (n === icon) return; // keep icon
+                                el.removeChild(n);
+                            });
+                            el.appendChild(document.createTextNode(' ' + text));
                         } else {
                             el.textContent = text;
                         }
@@ -3546,16 +3581,36 @@
                     const tabs = document.querySelectorAll('.tab');
                     tabs.forEach(tab => {
                         const key = tab.dataset.tab;
-                        if (key && this.t) {
-                            const trans = this.t('tabs.' + key);
-                            if (trans) tab.textContent = trans;
+                        if (!key || !this.t) return;
+                        const trans = this.t('tabs.' + key);
+                        if (!trans) return;
+                        // Preserve any existing icon (<i ...>) as the first child
+                        const firstChild = tab.querySelector('i.ti');
+                        if (firstChild) {
+                            // Remove all text nodes after icon and rebuild label
+                            tab.innerHTML = '';
+                            tab.appendChild(firstChild);
+                            const space = document.createTextNode(' ' + trans);
+                            tab.appendChild(space);
+                        } else {
+                            tab.textContent = trans;
                         }
                     });
 
-                    // Update header
+                    // Update header (preserve icon in h1)
                     const h1 = document.querySelector('.header h1');
                     const p = document.querySelector('.header p');
-                    if (h1) h1.textContent = this.t('header.title');
+                    if (h1) {
+                        const icon = h1.querySelector(':scope > i.ti');
+                        const titleText = this.t('header.title');
+                        if (icon) {
+                            h1.innerHTML = '';
+                            h1.appendChild(icon);
+                            h1.appendChild(document.createTextNode(' ' + titleText));
+                        } else {
+                            h1.textContent = titleText;
+                        }
+                    }
                     if (p) p.textContent = this.t('header.subtitle');
 
                     // Update file input label
