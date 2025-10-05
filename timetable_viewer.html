@@ -221,7 +221,7 @@
         }
 
         body.dark-mode .timetable th {
-            background: #2f3942;
+            background: #4d5b67;
             color: var(--text);
             border-color: var(--border);
         }
@@ -1229,8 +1229,6 @@
     <div class="content-wrapper">
         <div id="teachers-content" class="tab-content active">
             <div class="dropdown-container">
-                <label class="dropdown-label" for="teacherSelect" data-i18n="dropdown.selectTeacher">Select
-                    Teacher:</label>
                 <select id="teacherSelect" class="dropdown">
                     <option value="" data-i18n-placeholder="dropdown.chooseTeacher">Choose a teacher...</option>
                 </select>
@@ -1240,8 +1238,6 @@
 
         <div id="students-content" class="tab-content">
             <div class="dropdown-container">
-                <label class="dropdown-label" for="studentSelect" data-i18n="dropdown.selectStudent">Select Student
-                    Group:</label>
                 <select id="studentSelect" class="dropdown">
                     <option value="" data-i18n-placeholder="dropdown.chooseStudent">اختر مجموعة تلاميذ</option>
                 </select>
@@ -1251,7 +1247,6 @@
 
         <div id="rooms-content" class="tab-content">
             <div class="dropdown-container">
-                <label class="dropdown-label" for="roomSelect" data-i18n="dropdown.selectRoom">Select Room:</label>
                 <select id="roomSelect" class="dropdown">
                     <option value="" data-i18n-placeholder="dropdown.chooseRoom">Choose a room...</option>
                 </select>
@@ -1613,7 +1608,7 @@
                     lastFileCouldNotLoad: 'تعذر تحميل آخر ملف تلقائياً',
                     diagnostics: 'تحقق من وحدة التحكم للتشخيص'
                 },
-                dropdown: { selectTeacher: 'اختر المعلم:', chooseTeacher: 'أستاذ أو أساتذة', selectStudent: 'اختر مجموعة تلاميذ:', chooseStudent: 'اختر مجموعة...', selectRoom: 'اختر القاعة:', chooseRoom: 'اختر قاعة...' },
+                dropdown: { selectTeacher: 'اختر أستاذا : ', chooseTeacher: 'اختر أستاذا ...', selectStudent: 'اختر مجموعة تلاميذ:', chooseStudent: 'اختر مجموعة...', selectRoom: 'اختر القاعة:', chooseRoom: 'اختر قاعة...' },
                 radio: {
                     teacherIndividual: 'معلم فردي',
                     teacherSelected: 'الأساتذة المحددون',
@@ -2601,6 +2596,8 @@
                 this.populatePrintDropdowns();
                 // Apply translations to newly created option elements
                 try { this.applyTranslations(); } catch (e) { console.error('applyTranslations after populateDropdowns failed', e); }
+                // After dropdowns are populated, show an empty timetable structure for the active tab
+                this.refreshCurrentTimetable();
             }
 
             populatePrintDropdowns() {
@@ -2949,6 +2946,8 @@
 
                     this.currentTab = tabName;
                     try { localStorage.setItem('fetLastTab', tabName); } catch (_) { }
+                    // Ensure appropriate empty timetable (or current selection timetable) shows immediately
+                    this.refreshCurrentTimetable();
                 } catch (e) {
                     console.error('switchTab error for', tabName, e);
                 }
@@ -2956,7 +2955,7 @@
 
             showTeacherTimetable(teacherName) {
                 if (!teacherName) {
-                    document.getElementById('teacherTimetable').innerHTML = '';
+                    document.getElementById('teacherTimetable').innerHTML = this.generateEmptyTimetable('teacher');
                     return;
                 }
 
@@ -2969,7 +2968,7 @@
 
             showStudentTimetable(studentName) {
                 if (!studentName) {
-                    document.getElementById('studentTimetable').innerHTML = '';
+                    document.getElementById('studentTimetable').innerHTML = this.generateEmptyTimetable('student');
                     return;
                 }
 
@@ -3050,7 +3049,7 @@
 
             showRoomTimetable(roomName) {
                 if (!roomName) {
-                    document.getElementById('roomTimetable').innerHTML = '';
+                    document.getElementById('roomTimetable').innerHTML = this.generateEmptyTimetable('room');
                     return;
                 }
 
@@ -3100,9 +3099,37 @@
                 });
                 return groups;
             }
+            generateEmptyTimetable(type) {
+                const dayNames = this.getDayNames();
+                const hourNames = this.getHourNames();
+                if (!dayNames.length || !hourNames.length) return '';
+                const isVertical = this.settings.tableLayout === 'vertical';
+                let html = '<table class="timetable"><thead><tr>';
+                if (isVertical) {
+                    html += '<th class="day-header">&nbsp;</th>';
+                    hourNames.forEach(h => { html += `<th>${h}</th>`; });
+                    html += '</tr></thead><tbody>';
+                    dayNames.forEach(d => {
+                        html += `<tr><td class="day-header"><strong>${d}</strong></td>`;
+                        hourNames.forEach(() => { html += '<td class="empty-slot"></td>'; });
+                        html += '</tr>';
+                    });
+                } else {
+                    html += '<th class="time-header">Time</th>';
+                    dayNames.forEach(d => { html += `<th>${d}</th>`; });
+                    html += '</tr></thead><tbody>';
+                    hourNames.forEach(h => {
+                        html += `<tr><td class="time-header">${h}</td>`;
+                        dayNames.forEach(() => { html += '<td class="empty-slot"></td>'; });
+                        html += '</tr>';
+                    });
+                }
+                html += '</tbody></table>';
+                return html;
+            }
 
             generateTimetable(activities, type, entityName = '') {
-                // Ensure activities is an array
+                // If caller wants an empty structural table, they should call generateEmptyTimetable.
                 if (!activities) {
                     activities = [];
                 } else if (!Array.isArray(activities)) {
@@ -3607,25 +3634,31 @@
             }
 
             refreshCurrentTimetable() {
-                // Refresh the current active tab's timetable
                 const activeTab = document.querySelector('.tab.active');
                 if (!activeTab) return;
-
                 const tabName = activeTab.dataset.tab;
+                const haveStructure = (this.data.days && this.data.days.length) || (this.data.realDays && this.data.realDays.length);
+
                 if (tabName === 'teachers') {
-                    const teacherSelect = document.getElementById('teacherSelect');
-                    if (teacherSelect.value) {
-                        this.showTeacherTimetable(teacherSelect.value);
+                    const sel = document.getElementById('teacherSelect');
+                    if (sel && sel.value) {
+                        this.showTeacherTimetable(sel.value);
+                    } else if (haveStructure) {
+                        document.getElementById('teacherTimetable').innerHTML = this.generateEmptyTimetable('teacher');
                     }
                 } else if (tabName === 'students') {
-                    const studentSelect = document.getElementById('studentSelect');
-                    if (studentSelect.value) {
-                        this.showStudentTimetable(studentSelect.value);
+                    const sel = document.getElementById('studentSelect');
+                    if (sel && sel.value) {
+                        this.showStudentTimetable(sel.value);
+                    } else if (haveStructure) {
+                        document.getElementById('studentTimetable').innerHTML = this.generateEmptyTimetable('student');
                     }
                 } else if (tabName === 'rooms') {
-                    const roomSelect = document.getElementById('roomSelect');
-                    if (roomSelect.value) {
-                        this.showRoomTimetable(roomSelect.value);
+                    const sel = document.getElementById('roomSelect');
+                    if (sel && sel.value) {
+                        this.showRoomTimetable(sel.value);
+                    } else if (haveStructure) {
+                        document.getElementById('roomTimetable').innerHTML = this.generateEmptyTimetable('room');
                     }
                 }
             }
@@ -3807,64 +3840,7 @@
                 return 'th';
             }
 
-            toggleRTL(isRTL) {
-                this.settings.rtl = isRTL;
-                const body = document.body;
-                const label = document.getElementById('rtlLabel');
-
-                if (isRTL) {
-                    body.classList.add('rtl');
-                    body.classList.remove('ltr');
-                    label.textContent = 'RTL (Right to Left)';
-                } else {
-                    body.classList.add('ltr');
-                    body.classList.remove('rtl');
-                    label.textContent = 'LTR (Left to Right)';
-                }
-            }
-
-            refreshCurrentTimetable() {
-                // Refresh the current active tab's timetable
-                const activeTab = document.querySelector('.tab.active');
-                if (!activeTab) return;
-
-                const tabName = activeTab.dataset.tab;
-                if (tabName === 'teachers') {
-                    const teacherSelect = document.getElementById('teacherSelect');
-                    if (teacherSelect.value) {
-                        this.showTeacherTimetable(teacherSelect.value);
-                    }
-                } else if (tabName === 'students') {
-                    const studentSelect = document.getElementById('studentSelect');
-                    if (studentSelect.value) {
-                        this.showStudentTimetable(studentSelect.value);
-                    }
-                } else if (tabName === 'rooms') {
-                    const roomSelect = document.getElementById('roomSelect');
-                    if (roomSelect.value) {
-                        this.showRoomTimetable(roomSelect.value);
-                    }
-                }
-            }
-
-            updateActivityColors() {
-                const activities = document.querySelectorAll('.activity');
-                activities.forEach(activity => {
-                    activity.style.background = this.settings.activityColor;
-                });
-            }
-
-            adjustColor(color, amount) {
-                // Simple color adjustment function
-                const num = parseInt(color.replace('#', ''), 16);
-                const amt = Math.round(2.55 * amount);
-                const R = (num >> 16) + amt;
-                const G = (num >> 8 & 0x00FF) + amt;
-                const B = (num & 0x0000FF) + amt;
-                return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-            }
+            // (Removed duplicate toggleRTL, refreshCurrentTimetable, updateActivityColors, adjustColor)
 
             // (Duplicate earlier definition removed and consolidated above)
 
