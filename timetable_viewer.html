@@ -13,12 +13,185 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" crossorigin="anonymous"> -->
     <noscript>
         <style>
+            :root {
+                --bg: #f5f7fa;
+                --bg-alt: #ffffff;
+                --text: #333;
+                --border: #e1e5e9;
+                --panel-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                --accent-grad-start: #667eea;
+                --accent-grad-end: #764ba2;
+                --activity-border: #ffffff55;
+            }
+
+            .dark-mode {
+                --bg: #121417;
+                --bg-alt: #1e2329;
+                --text: #e4e8ed;
+                --border: #2d353f;
+                --panel-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+                --accent-grad-start: #4956c4;
+                --accent-grad-end: #663d87;
+                --activity-border: #00000040;
+            }
+
+            body {
+                background: var(--bg);
+                color: var(--text);
+            }
+
+            .file-upload,
+            .tabs,
+            .tab-content,
+            .timetable,
+            .header,
+            .assigned-classes,
+            .subject-teachers {
+                background: var(--bg-alt);
+                box-shadow: var(--panel-shadow);
+            }
+
+            .timetable th,
+            .timetable td {
+                border-color: var(--border);
+            }
+
+            .tab {
+                color: #666;
+            }
+
+            .dark-mode .tab {
+                color: var(--text);
+                background: #222a31;
+            }
+
+            .dark-mode .tab.active {
+                background: #2c343c;
+            }
+
+            .dark-mode .file-input-wrapper {
+                background: linear-gradient(135deg, var(--accent-grad-start) 0%, var(--accent-grad-end) 100%);
+            }
+
+            .dark-mode .timetable td {
+                background: #242c33;
+            }
+
+            .dark-mode .timetable th {
+                background: #2f3942;
+            }
+
+            .dark-mode .info-panel,
+            .dark-mode .error-panel {
+                background: #2c343c;
+                color: var(--text);
+            }
+
+            .dark-mode .activity {
+                border: 1px solid var(--activity-border);
+            }
+
+            .dark-mode .header h1,
+            .dark-mode .header p {
+                color: var(--text);
+            }
+
+            .dark-mode select,
+            .dark-mode input[type="number"],
+            .dark-mode input[type="text"] {
+                background: #2c343c;
+                color: var(--text);
+                border: 1px solid var(--border);
+            }
+
+            .dark-mode .teachers-table td,
+            .dark-mode .teachers-table th {
+                background: #242c33;
+                border-color: var(--border);
+            }
+
+            .dark-mode .empty-slot {
+                background: #1d242a !important;
+            }
+
+            .dark-mode .file-upload-area {
+                background: #1e252b;
+            }
+
+            .dark-mode .file-upload-area.dragover {
+                background: #253039;
+            }
+
+            .dark-mode .timetable caption {
+                color: var(--text);
+            }
+
+            .dark-mode #fileStatus {
+                color: var(--text);
+            }
+
+            .dark-mode .timetable-container {
+                background: transparent;
+            }
+
+            .dark-mode .activity .subject,
+            .dark-mode .activity .room,
+            .dark-mode .activity .teacher,
+            .dark-mode .activity .students,
+            .dark-mode .activity .class-group {
+                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+            }
+
+            .dark-mode .settings-group h3 {
+                color: var(--text);
+            }
+
+            .dark-mode a {
+                color: #7aa6ff;
+            }
+
+            .dark-mode .tab:hover {
+                background: #323b44;
+            }
+
+            @media print {
+                body.dark-mode {
+                    background: white;
+                    color: black;
+                }
+            }
+
             .ti {
                 display: none !important
             }
         </style>
     </noscript>
     <style>
+        :root {
+            --bg: #f5f7fa;
+            --bg-alt: #ffffff;
+            --text: #333333;
+            --panel: #ffffff;
+            --border: #e1e5e9;
+            --accent-grad-start: #667eea;
+            --accent-grad-end: #764ba2;
+            --activity-border: #ffffff55;
+        }
+
+        .dark-mode:root,
+        html.dark-mode,
+        body.dark-mode {
+            --bg: #121417;
+            --bg-alt: #1e2329;
+            --text: #e4e8ed;
+            --panel: #1e2329;
+            /* Darkened border color (was #2d353f) to avoid washed-out light look */
+            --border: #2f3941;
+            --accent-grad-start: #4956c4;
+            --accent-grad-end: #663d87;
+            --activity-border: #00000040;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -27,8 +200,134 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
+            background: var(--bg);
+            color: var(--text);
+            transition: background .25s ease, color .25s ease;
+        }
+
+        body.dark-mode .file-upload,
+        body.dark-mode .tabs,
+        body.dark-mode .tab-content,
+        body.dark-mode .timetable,
+        body.dark-mode .assigned-classes,
+        body.dark-mode .subject-teachers,
+        body.dark-mode .header {
+            background: var(--bg-alt);
+            color: var(--text);
+        }
+
+        body.dark-mode .file-upload {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .6);
+        }
+
+        body.dark-mode .timetable th {
+            background: #2f3942;
+            color: var(--text);
+            border-color: var(--border);
+        }
+
+        body.dark-mode .timetable td {
+            background: #242c33;
+            border-color: var(--border);
+        }
+
+        body.dark-mode .empty-slot {
+            background: #1d242a !important;
+        }
+
+        body.dark-mode .header {
+            background: linear-gradient(135deg, var(--accent-grad-start) 0%, var(--accent-grad-end) 100%);
+        }
+
+        body.dark-mode select,
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="text"],
+        body.dark-mode textarea {
+            background: #2c343c;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        body.dark-mode .tab {
+            background: #222a31;
+            color: var(--text);
+        }
+
+        body.dark-mode .tab.active {
+            background: #2c343c;
+        }
+
+        body.dark-mode .tab:hover {
+            background: #323b44;
+        }
+
+        .howto-hint {
+            margin-top: 15px;
+            padding: 15px;
+            background: #d6e9ff;
+            border-radius: 8px;
+            font-size: 14px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.4;
+        }
+
+        body.dark-mode .howto-hint {
+            background: #203245;
+            color: var(--text);
+        }
+
+        body.dark-mode .howto-hint code {
+            background: #2c414f;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        /* Generic label & form control color adaptation */
+        label,
+        .settings-group h3 {
+            color: var(--text);
+        }
+
+        .timetable {
+            border-collapse: collapse;
+        }
+
+        .timetable th,
+        .timetable td {
+            border: 1px solid var(--border);
+        }
+
+        /* Improve visibility of dashed drop area and adapt to dark mode */
+        .file-upload-area {
+            background: var(--bg-alt);
+            border: 3px dashed var(--border);
+        }
+
+        .file-upload-area.dragover {
+            background: rgba(102, 126, 234, 0.08);
+        }
+
+        body.dark-mode .file-upload-area {
+            background: #1e252b;
+            border-color: #3a444c;
+        }
+
+        body.dark-mode .file-upload-area.dragover {
+            background: #253039;
+        }
+
+        /* Ensure file input label remains legible */
+        .file-input-label {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        body.dark-mode #fileStatus {
+            background: #1e252b !important;
+            color: var(--text) !important;
+            border-left-color: #4caf50 !important;
         }
 
         .header {
@@ -363,10 +662,15 @@
         }
 
         .settings-panel {
-            background: #f8f9fa;
+            background: var(--bg-alt);
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        body.dark-mode .settings-panel {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .6);
         }
 
         .settings-section {
@@ -374,9 +678,9 @@
         }
 
         .settings-section h3 {
-            color: #495057;
+            color: var(--text);
             margin-bottom: 15px;
-            border-bottom: 2px solid #dee2e6;
+            border-bottom: 2px solid var(--border);
             padding-bottom: 8px;
         }
 
@@ -403,29 +707,40 @@
             display: flex;
             flex-direction: column;
             padding: 10px;
-            background: #f8f9fa;
+            background: var(--bg);
             border-radius: 5px;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--border);
+        }
+
+        body.dark-mode .custom-name-input {
+            background: #1b2228;
         }
 
         .custom-name-input label {
             font-size: 12px;
             font-weight: 600;
-            color: #495057;
+            color: var(--text);
             margin-bottom: 5px;
+            opacity: .85;
         }
 
         .custom-name-input input {
             padding: 8px;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--border);
+            background: var(--bg-alt);
+            color: var(--text);
             border-radius: 3px;
             font-size: 14px;
         }
 
+        body.dark-mode .custom-name-input input {
+            background: #222a31;
+        }
+
         .custom-name-input input:focus {
             outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.35);
         }
 
         .timetable-header {
@@ -453,23 +768,34 @@
         .subject-teachers {
             margin-top: 20px;
             padding: 15px;
-            background: #f8f9fa;
+            background: var(--bg);
             text-align: center;
             border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        body.dark-mode .assigned-classes,
+        body.dark-mode .subject-teachers {
+            background: #1b2228;
         }
 
         .assigned-classes h4,
         .subject-teachers h4 {
             margin: 0 0 10px 0;
-            color: #495057;
+            color: var(--text);
         }
 
         .classes-list {
             padding: 4px;
             font-weight: 600;
             color: #007bff;
-            border: #8f8f8f solid 2px;
+            border: 2px solid var(--border);
             border-radius: 8px;
+            background: var(--bg-alt);
+        }
+
+        body.dark-mode .classes-list {
+            background: #222a31;
         }
 
         .subject-teacher-item {
@@ -487,23 +813,37 @@
 
         .teachers-table td {
             padding: 8px 12px;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--border);
             vertical-align: top;
+            background: var(--bg-alt);
+            color: var(--text);
+        }
+
+        body.dark-mode .teachers-table td {
+            background: #242c33;
         }
 
         .teachers-table .subject-cell {
-            background-color: #e9ecef;
+            background: #e9ecef;
             font-weight: bold;
             width: 25%;
             text-align: right;
             padding-right: 15px;
         }
 
+        body.dark-mode .teachers-table .subject-cell {
+            background: #2f3942;
+        }
+
         .teachers-table .teacher-cell {
-            background-color: #f8f9fa;
+            background: #f8f9fa;
             width: 25%;
             text-align: right;
             padding-left: 15px;
+        }
+
+        body.dark-mode .teachers-table .teacher-cell {
+            background: #242c33;
         }
 
         .activity-separator {
@@ -623,16 +963,21 @@
         }
 
         .print-section {
-            background: white;
+            background: var(--bg-alt);
             margin: 20px 0;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        body.dark-mode .print-section {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
         }
 
         .print-section h4 {
             margin-bottom: 15px;
-            color: #495057;
+            color: var(--text);
             font-size: 1.2rem;
         }
 
@@ -658,8 +1003,13 @@
 
         .selection-controls {
             padding: 10px;
-            background: #f8f9fa;
+            background: var(--bg);
             border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+
+        body.dark-mode .selection-controls {
+            background: #1b2228;
         }
 
         .checkbox-list {
@@ -674,15 +1024,29 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 5px;
-            background: white;
-            border-radius: 3px;
+            padding: 5px 8px;
+            background: var(--bg-alt);
+            border-radius: 4px;
             cursor: pointer;
+            border: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .checkbox-list label:hover {
+            background: rgba(102, 126, 234, 0.12);
+        }
+
+        body.dark-mode .checkbox-list label:hover {
+            background: #2a343d;
+        }
+
+        body.dark-mode .checkbox-list label {
+            background: #222a31;
         }
 
         .print-btn {
             background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
+            color: #fff;
             border: none;
             padding: 12px 24px;
             border-radius: 5px;
@@ -691,6 +1055,10 @@
             font-weight: 600;
             transition: all 0.3s ease;
             align-self: flex-start;
+        }
+
+        body.dark-mode .print-btn {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .6);
         }
 
         .print-btn:hover {
@@ -702,6 +1070,10 @@
             background: linear-gradient(135deg, #007bff, #0056b3);
             font-size: 18px;
             padding: 15px 30px;
+        }
+
+        body.dark-mode .print-all {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .6);
         }
 
         .print-all:hover {
@@ -821,8 +1193,7 @@
                         aria-hidden="true"></i> Select FET XML Files</span>
             </label>
             <p style="margin-top: 15px; color: #666;" data-i18n="howto.dragdrop">Or drag and drop your files here</p>
-            <div
-                style="margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; font-size: 14px; max-width: 600px; margin-left: auto; margin-right: auto;">
+            <div class="howto-hint">
                 <i class="ti ti-bulb" aria-hidden="true"></i> <strong data-i18n="howto.title">How to use:</strong><br>
                 <div data-i18n-howto>1. Click "Select FET XML Files" button above</div>
                 <div data-i18n-howto>2. Navigate to your folder and select <code>TimeTable.fet</code></div>
@@ -893,12 +1264,8 @@
                 <div class="settings-section">
                     <h3 data-i18n="settings.display">🌐 Display Settings</h3>
                     <div class="setting-item">
-                        <label data-i18n="settings.textDirection">Text Direction:</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="rtlToggle">
-                            <span class="slider"></span>
-                        </label>
-                        <span id="rtlLabel">LTR (Left to Right)</span>
+                        <label for="darkModeToggle" data-i18n="settings.darkMode">Dark Mode:</label>
+                        <input type="checkbox" id="darkModeToggle">
                     </div>
                     <div class="setting-item">
                         <label data-i18n="settings.language">Language:</label>
@@ -1146,7 +1513,7 @@
                     resetDefaults: 'Reset to Defaults',
                     exportSettings: 'Export Settings'
                 },
-                settings: { display: '🌐 Display Settings', textDirection: 'Text Direction:', language: 'Language:', ltr: 'LTR (Left to Right)', rtl: 'RTL (Right to Left)' },
+                settings: { display: '🌐 Display Settings', textDirection: 'Text Direction:', language: 'Language:', ltr: 'LTR (Left to Right)', rtl: 'RTL (Right to Left)', darkMode: 'Dark Mode' },
                 timeSettings: { title: '📅 Time Settings', dayNames: 'Day Names:', hourFormat: 'Hour Format:' },
                 options: {
                     original: 'Original (from file)',
@@ -1207,7 +1574,7 @@
                     resetDefaults: 'Réinitialiser',
                     exportSettings: 'Exporter les paramètres'
                 },
-                settings: { display: '🌐 Paramètres d\'affichage', textDirection: 'Direction du texte:', language: 'Langue:', ltr: 'LTR (Gauche à droite)', rtl: 'RTL (Droite à gauche)' },
+                settings: { display: '🌐 Paramètres d\'affichage', textDirection: 'Direction du texte:', language: 'Langue:', ltr: 'LTR (Gauche à droite)', rtl: 'RTL (Droite à gauche)', darkMode: 'Mode sombre' },
                 timeSettings: { title: '📅 Paramètres de temps', dayNames: 'Noms des jours:', hourFormat: 'Format des heures:' },
                 options: {
                     original: 'Original (depuis le fichier)',
@@ -1268,7 +1635,7 @@
                     resetDefaults: 'إعادة التعيين',
                     exportSettings: 'تصدير الإعدادات'
                 },
-                settings: { display: '🌐 إعدادات العرض', textDirection: 'اتجاه النص:', language: 'اللغة:', ltr: 'LTR (من اليسار لليمين)', rtl: 'RTL (من اليمين لليسار)' },
+                settings: { display: '🌐 إعدادات العرض', textDirection: 'اتجاه النص:', language: 'اللغة:', ltr: 'LTR (من اليسار لليمين)', rtl: 'RTL (من اليمين لليسار)', darkMode: 'الوضع الداكن' },
                 timeSettings: { title: '📅 إعدادات الوقت', dayNames: 'أسماء الأيام:', hourFormat: 'تنسيق الساعة:' },
                 options: {
                     original: 'الأصلي (من الملف)',
@@ -1312,6 +1679,7 @@
                 const savedSettings = this.loadSettings();
                 this.settings = {
                     rtl: false,
+                    darkMode: false,
                     language: 'en',
                     dayNamesFormat: 'original',
                     hourFormat: 'original',
@@ -1323,6 +1691,11 @@
                     customHourNames: {},
                     ...savedSettings
                 };
+
+                if (this.settings.darkMode) {
+                    document.documentElement.classList.add('dark-mode');
+                    document.body.classList.add('dark-mode');
+                }
 
                 // Apply loaded settings to UI after DOM is ready
                 this.applySettingsToUI();
@@ -1637,11 +2010,23 @@
                     this.showRoomTimetable(e.target.value);
                 });
 
-                // Settings event listeners
-                document.getElementById('rtlToggle').addEventListener('change', (e) => {
-                    this.toggleRTL(e.target.checked);
-                    this.saveSettings();
-                });
+                // Settings event listeners (RTL now auto-derived from language)
+
+                const darkToggle = document.getElementById('darkModeToggle');
+                if (darkToggle) {
+                    darkToggle.checked = !!this.settings.darkMode;
+                    darkToggle.addEventListener('change', (e) => {
+                        this.settings.darkMode = e.target.checked;
+                        if (this.settings.darkMode) {
+                            document.documentElement.classList.add('dark-mode');
+                            document.body.classList.add('dark-mode');
+                        } else {
+                            document.documentElement.classList.remove('dark-mode');
+                            document.body.classList.remove('dark-mode');
+                        }
+                        this.saveSettings();
+                    });
+                }
 
                 // Language select
                 const langSelect = document.getElementById('languageSelect');
@@ -3212,20 +3597,13 @@
                 }
             }
 
-            toggleRTL(isRTL) {
-                this.settings.rtl = isRTL;
+            // Removed toggleRTL; direction now set automatically based on selected language
+            updateDirectionFromLanguage(lang) {
+                const isRTL = (lang || this.settings.language) === 'ar';
                 const body = document.body;
-                const label = document.getElementById('rtlLabel');
-
-                if (isRTL) {
-                    body.classList.add('rtl');
-                    body.classList.remove('ltr');
-                    label.textContent = 'RTL (Right to Left)';
-                } else {
-                    body.classList.add('ltr');
-                    body.classList.remove('rtl');
-                    label.textContent = 'LTR (Left to Right)';
-                }
+                body.classList.toggle('rtl', isRTL);
+                body.classList.toggle('ltr', !isRTL);
+                document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
             }
 
             refreshCurrentTimetable() {
@@ -3273,26 +3651,27 @@
 
             resetSettings() {
                 this.settings = {
-                    rtl: false,
                     language: 'en',
                     dayNamesFormat: 'original',
                     hourFormat: 'original',
                     tableLayout: 'vertical',
                     activityColor: '#28a745',
                     morningStart: 8,
-                    afternoonStart: 14
+                    afternoonStart: 14,
+                    darkMode: false
                 };
 
                 // Update UI
-                document.getElementById('rtlToggle').checked = false;
                 document.getElementById('dayNamesFormat').value = 'original';
                 document.getElementById('hourFormat').value = 'original';
                 document.getElementById('tableLayout').value = 'vertical';
                 document.getElementById('activityColor').value = '#28a745';
                 document.getElementById('morningStart').value = 8;
                 document.getElementById('afternoonStart').value = 14;
+                const darkToggle = document.getElementById('darkModeToggle');
+                if (darkToggle) darkToggle.checked = false;
 
-                this.toggleRTL(false);
+                this.updateDirectionFromLanguage(this.settings.language);
                 this.refreshCurrentTimetable();
             }
 
@@ -3487,26 +3866,7 @@
                     (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
             }
 
-            resetSettings() {
-                this.settings = {
-                    rtl: false,
-                    language: 'en',
-                    dayNamesFormat: 'original',
-                    hourFormat: 'original',
-                    tableLayout: 'vertical',
-                    activityColor: '#28a745'
-                };
-
-                // Update UI
-                document.getElementById('rtlToggle').checked = false;
-                document.getElementById('dayNamesFormat').value = 'original';
-                document.getElementById('hourFormat').value = 'original';
-                document.getElementById('tableLayout').value = 'vertical';
-                document.getElementById('activityColor').value = '#28a745';
-
-                this.toggleRTL(false);
-                this.refreshCurrentTimetable();
-            }
+            // (Duplicate earlier definition removed and consolidated above)
 
             loadSettings() {
                 try {
@@ -3534,17 +3894,26 @@
                 // Wait for DOM to be ready
                 setTimeout(() => {
                     try {
-                        document.getElementById('rtlToggle').checked = this.settings.rtl;
+                        // rtlToggle removed; direction auto-applied below
                         document.getElementById('dayNamesFormat').value = this.settings.dayNamesFormat;
                         document.getElementById('hourFormat').value = this.settings.hourFormat;
                         document.getElementById('tableLayout').value = this.settings.tableLayout;
                         document.getElementById('activityColor').value = this.settings.activityColor;
+                        const darkToggle = document.getElementById('darkModeToggle');
+                        if (darkToggle) darkToggle.checked = !!this.settings.darkMode;
+                        // Apply dark mode class immediately based on stored setting
+                        if (this.settings.darkMode) {
+                            document.documentElement.classList.add('dark-mode');
+                            document.body.classList.add('dark-mode');
+                        } else {
+                            document.documentElement.classList.remove('dark-mode');
+                            document.body.classList.remove('dark-mode');
+                        }
                         // set language select
                         const langSelectEl = document.getElementById('languageSelect');
                         if (langSelectEl) langSelectEl.value = this.settings.language || 'en';
                         // Set RTL label text if exists
-                        const rtlLabel = document.getElementById('rtlLabel');
-                        if (rtlLabel) rtlLabel.textContent = this.settings.rtl ? (this.t ? this.t('settings.rtl') : 'RTL') : (this.t ? this.t('settings.ltr') : 'LTR');
+                        // rtlLabel removed
                         if (typeof this.settings.morningStart !== 'undefined') {
                             document.getElementById('morningStart').value = this.settings.morningStart;
                         }
@@ -3552,7 +3921,7 @@
                             document.getElementById('afternoonStart').value = this.settings.afternoonStart;
                         }
 
-                        this.toggleRTL(this.settings.rtl);
+                        this.updateDirectionFromLanguage(this.settings.language);
                         this.createCustomInputs();
                         // Apply translations after applying settings
                         this.applyTranslations();
